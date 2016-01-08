@@ -3,17 +3,17 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
-subtitle:
+title: Eleme Mobilests
+subtitle: 
 description:
-author: John Doe
+author: 
 language: zh-Hans
-timezone:
+timezone: Asia/Shanghai
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://eleme.io/Mobilests/
-root: /Mobilests/
+url: http://eleme.io/mobilests
+root: /mobilests/
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 
@@ -62,6 +62,18 @@ pagination_dir: page
 
 # Extensions
 ## Plugins: http://hexo.io/plugins/
+feed:
+  type: atom
+  path: atom.xml
+  limit: 20
+  hub:
+category_generator:
+  per_page: 10
+archive_generator:
+  per_page: 10
+  yearly: true
+  monthly: true
+  daily: false
 ## Themes: http://hexo.io/themes/
 theme: next
 
@@ -69,7 +81,8 @@ theme: next
 ## Docs: http://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: git@github.com:eleme/Mobilests.git
+  repo: git@github.com:eleme/mobilests.git
   branch: gh-pages
 
-# TODO: disquz, 百度统计, rss, 标签云页面, About页面, 友情链接
+# TODO: disquz, 百度统计, About页面, 友情链接, icon - http://theme-next.iissnan.com/theme-settings.html
+# TODO: 文章最后的作者签名方案
