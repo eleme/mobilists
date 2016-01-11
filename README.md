@@ -1,6 +1,6 @@
 # Mobilists
 
-Blog for Eleme team group.
+Blog for Eleme mobile team.
 
 We're using [Hexo](https://hexo.io/).
 
