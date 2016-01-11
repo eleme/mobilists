@@ -83,6 +83,3 @@ deploy:
   type: git
   repo: git@github.com:eleme/mobilists.git
   branch: gh-pages
-
-# TODO: disquz, 百度统计, About页面, 友情链接, icon - http://theme-next.iissnan.com/theme-settings.html
-# TODO: 文章最后的作者签名方案
