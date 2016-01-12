@@ -1,5 +1,6 @@
 title: 突破微信跳转限制－Universal Links那些坑
 date: 2016-01-10 21:43:29
+author: Bryan
 tags:
 - iOS
 - Universal Links

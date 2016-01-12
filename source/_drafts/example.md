@@ -1,5 +1,6 @@
 title: example
 comments: false
+author: xxx
 date: 2016-01-10 21:43:29
 tags:
 - iOS
