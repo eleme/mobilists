@@ -15,17 +15,13 @@ git submodule update // keep themes/next update to date
 
 ## Install Dev Tools
 
-Firstly install these tools:
+Firstly install `hexo`:
 
 ```
 npm install hexo-cli -g
-npm install hexo-generator-feed --save
-npm install hexo-generator-category --save
-npm install hexo-generator-archive --save
-npm install hexo-deployer-git --save
 ```
 
-Then cd the foler:
+Then cd the project foler:
 ```
 npm install
 ```
