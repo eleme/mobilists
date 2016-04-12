@@ -28,6 +28,10 @@ npm install
 
 Then start writing following documentation on [Hexo](https://hexo.io/docs).
 
+### PlantUML
+
+A third-party plug-in supporting PlantUML when writing is added in the npm package, see [here](https://github.com/oohcoder/hexo-tag-plantuml) for how to use it when writing.
+
 ## Before Writing
 
 Pull from remote master branch, so your deploy will include other people's new posts.
