@@ -38,6 +38,8 @@ Pull from remote master branch, so your deploy will include other people's new p
 
 Run `git submodule update --remote` to update the theme.
 
+Run `npm update` to update node modules if `npm outdated` says you have outdated node module(s).
+
 ## After Deploying
 
 After deploying, you should push your changes to remote master branch so that when another person writes  and deploys, your post is included.
