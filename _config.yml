@@ -75,7 +75,7 @@ archive_generator:
   monthly: true
   daily: false
 ## Themes: http://hexo.io/themes/
-theme: hexo-theme-eleme
+theme: next
 
 # Deployment
 ## Docs: http://hexo.io/docs/deployment.html
