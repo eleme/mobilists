@@ -21,7 +21,7 @@ so...
 
 ### RTFC
 
-Amigo has opened source code in github, so everyone has access to it;
+[Amigo](https://github.com/eleme/amigo) has opened source code in github, so everyone has access to it;
 
 and we use **Apache License v2.0** as amigo's license, so everyone can use & modify it.
 
