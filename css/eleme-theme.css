@@ -5,7 +5,6 @@ html {
 body {
   background: #fdfdfa !important;
   margin: 0 auto !important;
-  max-width: 960px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   height: 100%;
   overflow-x: hidden;
@@ -20,7 +19,7 @@ a {
 #eleme-content-outer {
   background: #fdfdfa;
   min-height: 100%;
-  padding-bottom: 108px;
+  padding-bottom: 64px;
   width: 100%;
   overflow: hidden;
 }
@@ -680,7 +679,7 @@ pre .javascript .function {
   border-top-left-radius: 2px;
   border-top-right-radius: 2px;
   width: 100%;
-  max-width: 960px;
+  margin: auto;
   overflow: hidden;
 }
 #bottom-inner {
@@ -704,7 +703,8 @@ pre .javascript .function {
   color: #3190e8;
 }
 #content-inner {
-  width: 100%;
+  max-width: 960px;
+  margin: auto;
 }
 .recent-posts-hint {
   color: #999;
@@ -738,21 +738,16 @@ pre .javascript .function {
   border-bottom: 1px #ddd dashed;
 }
 #pagination {
-  position: absolute;
-  bottom: 64px;
   height: 44px;
   width: 100%;
   border-top: 1px #eee solid;
+  margin-top: 16px;
 }
 .pagination-number {
-  position: absolute;
-  bottom: 0px;
   height: 44px;
   width: 100%;
 }
 .pagination-indicator {
-  position: absolute;
-  bottom: 0;
   height: 44px;
   width: 100%;
 }
@@ -865,6 +860,7 @@ pre .javascript .function {
   color: #ff6000;
 }
 pre {
+  overflow-x: scroll;
   background: #eee;
 }
 pre code {
@@ -1025,4 +1021,7 @@ code {
 .page-content {
   margin: auto;
   max-width: 95%;
+}
+.disqus-footer {
+  display: none;
 }
