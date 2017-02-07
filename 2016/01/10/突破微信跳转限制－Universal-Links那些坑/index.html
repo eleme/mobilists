@@ -1,0 +1,143 @@
+
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+  <title>突破微信跳转限制－Universal Links那些坑 - Eleme Mobilists</title>
+
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="/css/eleme-theme.css">
+    
+  
+</head>
+<body>
+
+<div id="wrapper">
+    <div id="eleme-menu-outer">
+        <a href="/"><img src="/img/eleme-logo.png"></a>
+        <div id="menu-inner">
+            
+            <a href="/">主页</a>
+            
+            <a href="/archives">归档</a>
+            
+            <a href="/about">关于</a>
+            
+        </div>
+    </div>
+
+    <div id="eleme-content-outer">
+        <div id="content-inner">
+            <article id="post">
+    <h1 class="post-title">突破微信跳转限制－Universal Links那些坑</h1>
+    <p class="post-meta">
+        
+        <span class="release">发表于
+            <time datetime="2016-01-10T13:43:29.000Z">
+            2016-01-10
+            </time>
+        </span>
+        
+        
+        <span>&nbsp;分类: <a href="/categories/iOS/">iOS</a></span>
+        
+        
+        <span class="author">&nbsp;authored by <a target="_blank" href="https://github.com/Bryan">Bryan</a></span>
+        
+    </p>
+    <div class="post-wrapper">
+        <p>微信屏蔽了在其内部webview中大部分URL Scheme跳转（除了一个白名单比如点评），目前突破这个限制有两种方案</p>
+<ul>
+<li>WXAppExtendObject: 这个用法自查</li>
+<li>Universal Links: 文档在<a href="https://developer.apple.com/library/ios/documentation/General/Conceptual/AppSearch/UniversalLinks.html" target="_blank" rel="external">这里</a> ，工作原理，如何实现，直接参考官方文档即可</li>
+</ul>
+<p>但是我们按照文档支持了Universal Links，却在iOS9.2开始发现不work了，那么下面开始尝试解决问题</p>
+<h2 id="App-Search-API-Validation-Tool"><a href="#App-Search-API-Validation-Tool" class="headerlink" title="App Search API Validation Tool"></a>App Search API Validation Tool</h2><hr>
+<p>apple官方有出一个工具－<a href="https://search.developer.apple.com/appsearch-validation-tool/" target="_blank" rel="external">App Search API Validation Tool</a>，这个工具可以测试网站对iOS9 search API的支持，其中包括了对Universal Links的配置检查</p>
+<p>但是这个工具对我们网站检查的结果是 <code>passed</code></p>
+<h2 id="iOS端表现分析"><a href="#iOS端表现分析" class="headerlink" title="iOS端表现分析"></a>iOS端表现分析</h2><hr>
+<p>iOS 9.2开始具体变现如下：</p>
+<ul>
+<li>Safari中点击符合条件的Link，没有跳转App，但是长按链接能弹出用饿了么打开链接的选项</li>
+<li>信息app内点击指定Link，works</li>
+<li>微信中打开对应的web，点击符合条件的Link，没有跳转App</li>
+</ul>
+<p>看起来iOS 9.2肯定是有修改相关的机制，但是Apple并没有提供相应的修改说明（反正我们没有搜到），这个也符合apple一贯的作风</p>
+<h2 id="答案"><a href="#答案" class="headerlink" title="答案"></a>答案</h2><p>感谢 <a href="https://dev.branch.io" target="_blank" rel="external">Branch Metrics</a>，我在<a href="https://dev.branch.io/recipes/branch_universal_links/ios/#which-appsbrowsers-support-universal-links" target="_blank" rel="external">这里</a>找到了答案</p>
+<p>贴上所有的注意点</p>
+<ul>
+<li>Universal Links will not work if you paste the link into the browser URL field.</li>
+<li>Universal Links work with a user driven <code>&lt;a href=&quot;...&quot;&gt;</code> element click across domains. Example: if there is a Universal Link on google.com pointing to bnc.lt, it will open the app.</li>
+<li>Universal Links will not work with a user driven <code>&lt;a href=&quot;...&quot;&gt;</code> element click on the same domain. Example: if there is a Universal Link on google.com pointing to a different Universal Link on google.com, it will not open the app.</li>
+<li>Universal Links cannot be triggered via Javascript (in window.onload or via a .click() call on an <code>&lt;a&gt;</code> element), unless it is part of a user action.</li>
+</ul>
+<p>也就是从iOS 9.2开始，在相同的domain内Universal Links是不work的，必须要跨域才生效，我们实测值需要跨子域名即可，比如 m.domain.com 跳转 o.domain.com 是可以触发跳转App</p>
+<p>Written by 饿了么iOS组 － Bryan</p>
+
+    </div>
+    
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'elememobileblog';
+        var disqus_identifier = '2016/01/10/突破微信跳转限制－Universal-Links那些坑/';
+        var disqus_title = '突破微信跳转限制－Universal Links那些坑';
+        var disqus_url = 'http://mobilists.eleme.io/2016/01/10/突破微信跳转限制－Universal-Links那些坑/';
+
+        function run_disqus_script(disqus_script){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }
+
+        run_disqus_script('count.js');
+        
+        run_disqus_script('embed.js');
+        
+    </script>
+
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+    
+</article>
+
+
+<nav id="pagination">
+  <div class="pagination-number">
+      
+  </div>
+ <div class="pagination-indicator">
+     
+     <a href="/2016/02/12/详解-iOS-8-UIPresentationController-custom-presentation/" class="prev-post">< 详解 iOS 8 `UIPresentationController` Custom Presentation</a>
+     
+
+     
+ </div>
+</nav>
+
+
+        </div>
+    </div>
+
+    <div id="eleme-bottom-outer">
+        <div id="bottom-inner">
+            <p class="eleme-copyright">&copy; copyright 2016 by Eleme Mobilists</p>
+            <p class="eleme-theme-copyright">eleme-mobile hexo theme by <a target="_blank" href="https://github.com/stephenwzl">stephenw</a></p>
+            <br>
+        </div>
+    </div>
+    
+    
+    <script src="/js/eleme-theme.js"></script>
+    
+    
+</div>
+
+</body>
+</html>

@@ -1,0 +1,787 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Eleme Mobilists</title>
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://mobilists.eleme.io/"/>
+  <updated>2017-02-07T09:21:46.000Z</updated>
+  <id>http://mobilists.eleme.io/</id>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>使用链式调用解决多可选参数接口设计问题</title>
+    <link href="http://mobilists.eleme.io/2017/01/11/%E4%BD%BF%E7%94%A8%E9%93%BE%E5%BC%8F%E8%B0%83%E7%94%A8%E8%A7%A3%E5%86%B3%E5%A4%9A%E5%8F%AF%E9%80%89%E5%8F%82%E6%95%B0%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1%E9%97%AE%E9%A2%98/"/>
+    <id>http://mobilists.eleme.io/2017/01/11/使用链式调用解决多可选参数接口设计问题/</id>
+    <published>2017-01-11T14:25:00.000Z</published>
+    <updated>2017-02-07T09:21:46.000Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h1><p>我们在 coding 的征途中，总会写下几个（or 几十个?）<code>xxxUtils</code> 之类的东西。想象有这样一个 <code>NVMImageUtils</code>，一开始它的接口是这样的：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">+ (<span class="built_in">UIImage</span> *)imageWithSize:(<span class="built_in">CGSize</span>)size color:(<span class="built_in">UIColor</span> *)<span class="built_in">UIColor</span> &#123;</div><div class="line">  <span class="comment">// IMP</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>马上需要加个参数 borderColor，是可选的，于是接口成了这样：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">+ (<span class="built_in">UIImage</span> *)imageWithSize:(<span class="built_in">CGSize</span>)size color:(<span class="built_in">UIColor</span> *)<span class="built_in">UIColor</span> &#123;</div><div class="line">  <span class="keyword">return</span> [<span class="keyword">self</span> imageWithSize:size color:color borderColor:<span class="literal">nil</span>];</div><div class="line">&#125;</div><div class="line"></div><div class="line">+ (<span class="built_in">UIImage</span> *)imageWithSize:(<span class="built_in">CGSize</span>)size color:(<span class="built_in">UIColor</span> *)<span class="built_in">UIColor</span> borderColor:(<span class="built_in">UIColor</span> *)borderColor &#123;</div><div class="line">  <span class="comment">// IMP</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>过段时间再加个参数 cornerRadius：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">+ (<span class="built_in">UIImage</span> *)imageWithSize:(<span class="built_in">CGSize</span>)size color:(<span class="built_in">UIColor</span> *)<span class="built_in">UIColor</span> &#123;</div><div class="line">  <span class="keyword">return</span> [<span class="keyword">self</span> imageWithSize:size color:color borderColor:<span class="literal">nil</span>];</div><div class="line">&#125;</div><div class="line"></div><div class="line">+ (<span class="built_in">UIImage</span> *)imageWithSize:(<span class="built_in">CGSize</span>)size color:(<span class="built_in">UIColor</span> *)<span class="built_in">UIColor</span> borderColor:(<span class="built_in">UIColor</span> *)borderColor &#123;</div><div class="line">  <span class="keyword">return</span> [<span class="keyword">self</span> imageWithSize:size color:color borderColor:borderColor cornerRadius:<span class="literal">nil</span>];</div><div class="line">&#125;</div><div class="line"></div><div class="line">+ (<span class="built_in">UIImage</span> *)imageWithSize:(<span class="built_in">CGSize</span>)size color:(<span class="built_in">UIColor</span> *)<span class="built_in">UIColor</span> cornerRadius:(<span class="built_in">NSNumber</span> *) cornerRadius &#123;</div><div class="line">  <span class="keyword">return</span> [<span class="keyword">self</span> imageWithSize:size color:color borderColor:<span class="literal">nil</span> cornerRadius:cornerRadius];</div><div class="line">&#125;</div><div class="line"></div><div class="line">+ (<span class="built_in">UIImage</span> *)imageWithSize:(<span class="built_in">CGSize</span>)size color:(<span class="built_in">UIColor</span> *)<span class="built_in">UIColor</span> borderColor:(<span class="built_in">UIColor</span> *)borderColor cornerRadius:(<span class="built_in">NSNumber</span> *)cornerRadius &#123;</div><div class="line">  <span class="comment">// IMP</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>要是再加一个 borderWidth，估计就 hold 不住了。。。</p>
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p>通过玩弄 objc 的语法，最终的效果如下，接口可被链式调用，且需要什么可选参数就调什么：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">UIImage</span> *image = nvm_beginImage(size)</div><div class="line">                     .fillColor(fillColor)     <span class="comment">// optional</span></div><div class="line">                     .borderColor(borderColor) <span class="comment">// optional</span></div><div class="line">                     .cornerRadius(<span class="number">20</span>)         <span class="comment">// optional</span></div><div class="line">                     .opacity(<span class="number">0.5</span>)             <span class="comment">// optional</span></div><div class="line">                     .make;</div></pre></td></tr></table></figure>
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>头文件如下，声明一个类叫 <code>NVMImageMaker</code>，用来储存 make 一个 image 需要的各种参数，最终可以通过这些参数 make 出 image：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">NVMImageMaker</span> : <span class="title">NSObject</span></span></div><div class="line"></div><div class="line"><span class="comment">/// image fill color</span></div><div class="line">- (NVMImageMaker* (^)(<span class="built_in">UIColor</span>* imageFillColor))fillColor;</div><div class="line"><span class="comment">/// image border color</span></div><div class="line">- (NVMImageMaker* (^)(<span class="built_in">UIColor</span>* imageBorderColor))borderColor;</div><div class="line"><span class="comment">/// border 的 width, 默认 1 px, 仅当设置了 border color 才有效果</span></div><div class="line">- (NVMImageMaker* (^)(<span class="built_in">CGFloat</span> imageBorderWidth))borderWidth;</div><div class="line"><span class="comment">/// corner radius</span></div><div class="line">- (NVMImageMaker* (^)(<span class="built_in">CGFloat</span> imageCornerRadius))cornerRadius;</div><div class="line"><span class="comment">/// 透明度, 范围 0 - 1, 会应用在整个 image 上</span></div><div class="line">- (NVMImageMaker* (^)(<span class="built_in">CGFloat</span> opacity))opacity;</div><div class="line"></div><div class="line"><span class="comment">/// 生成 image 返回</span></div><div class="line">- (<span class="built_in">UIImage</span> *)make;</div><div class="line"></div><div class="line">- (<span class="keyword">instancetype</span>)init <span class="built_in">NS_UNAVAILABLE</span>;</div><div class="line">+ (<span class="keyword">instancetype</span>)new <span class="built_in">NS_UNAVAILABLE</span>;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="comment">/// API 的入口, 从这里开始进行 chaining 式的 image making</span></div><div class="line"><span class="keyword">extern</span> NVMImageMaker* nvm_beginImage(<span class="built_in">CGSize</span> imageSize);</div></pre></td></tr></table></figure>
+<p>接口的入口是 <code>nvm_beginImage()</code>，接收的是必须的参数，这里是 <code>imageSize</code>，用来返回一个 <code>NVMImageMaker</code> 对象，</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">extern</span> NVMImageMaker *_Nonnull nvm_beginImage(<span class="built_in">CGSize</span> imageSize) &#123;</div><div class="line">  NVMImageMaker *maker = [NVMImageMaker new];</div><div class="line">  maker.imageSize = imageSize;</div><div class="line">  <span class="keyword">return</span> maker;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>以 <code>fillColor</code> 为例，看一看如何实现链式调用传入可选参数 <code>fillColor</code>：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- (NVMImageMaker * (^)(<span class="built_in">UIColor</span> * imageFillColor))fillColor &#123;</div><div class="line">  <span class="keyword">return</span> ^NVMImageMaker *(<span class="built_in">UIColor</span> *imageFillColor) &#123;</div><div class="line">    <span class="keyword">self</span>.imageFillColor = imageFillColor;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">  &#125;;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里 <code>fillColor</code> 实际返回的是一个 block，这个 block 接收一个真正的 <code>imageFillColor</code>，储存到 self (<code>NVMImageMaker</code>)，然后将 self 返回。配合用 dot 语法调用方法的特性，我们可以做到：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">nvm_beginImage(size).fillColor(color)</div><div class="line">|         ①         |   ②   |  ③ |</div><div class="line"><span class="comment">// ①: 返回 NVMImageMaker 实例</span></div><div class="line"><span class="comment">// ②: 返回一个 block，它接收一个 color，然后储存到前面的 NVMImageMaker 实例中，再次将其返回</span></div><div class="line"><span class="comment">// ③: 实际传入 color，再次得到 NVMImageMaker 实例</span></div></pre></td></tr></table></figure>
+<p>依此类推，我们可以用这样的思路添加任意的可选参数。</p>
+<p>最后，<code>make</code> 方法综合所有得到的参数，绘制成图片返回（实现忽略，不是本篇重点），最终得以通过链式调用得到图片：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">nvm_beginImage(size).fillColor(color).make;</div></pre></td></tr></table></figure>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>代码地址：<a href="https://github.com/eleme/NVMImageMaker" target="_blank" rel="external">https://github.com/eleme/NVMImageMaker</a>。可以直接通过 pod 使用，当然实现并不复杂，大可自行实现。</p>
+<p>至此，我们有了一个全新的思路，用来解决开篇演示的，让人越来越 hold 不住的多可选参数接口的设计问题。</p>
+<hr>
+<p>Written by 饿了么iOS组 － <a href="https://github.com/axl411" target="_blank" rel="external">axl411</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;问题&quot;&gt;&lt;a href=&quot;#问题&quot; class=&quot;headerlink&quot; title=&quot;问题&quot;&gt;&lt;/a&gt;问题&lt;/h1&gt;&lt;p&gt;我们在 coding 的征途中，总会写下几个（or 几十个?）&lt;code&gt;xxxUtils&lt;/code&gt; 之类的东西。想象有这样一个 &lt;co
+    
+    </summary>
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/categories/iOS/"/>
+    
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/tags/iOS/"/>
+    
+      <category term="Objective-C" scheme="http://mobilists.eleme.io/tags/Objective-C/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Amigo 源码解读</title>
+    <link href="http://mobilists.eleme.io/2016/09/01/Amigo%20%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/"/>
+    <id>http://mobilists.eleme.io/2016/09/01/Amigo 源码解读/</id>
+    <published>2016-09-01T09:18:09.000Z</published>
+    <updated>2017-02-07T09:21:46.000Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="Amigo-源码解读"><a href="#Amigo-源码解读" class="headerlink" title="Amigo 源码解读"></a>Amigo 源码解读</h1><p>现在 hotfix 框架有很多，原理大同小异，基本上是基于<a href="https://mp.weixin.qq.com/s?__biz=MzI1MTA1MzM2Nw==&amp;mid=400118620&amp;idx=1&amp;sn=b4fdd5055731290eef12ad0d17f39d4a" target="_blank" rel="external">qq空间这篇文章</a> 或者<a href="http://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&amp;mid=2649286306&amp;idx=1&amp;sn=d6b2865e033a99de60b2d4314c6e0a25&amp;scene=1&amp;srcid=0811AOttpqUnh1Wu5PYcXbnZ#rd" target="_blank" rel="external">微信的方案</a>。可惜的是微信的 Tinker 以及 QZone 都没有将其具体实现开源出来，只是在文章中分析了现有各个 hotfix 框架的优缺点以及他们的实现方案。Amigo 原理与 Tinker 基本相同，但是在 Tinker 的基础上，进一步实现了 so 文件、资源文件、Activity、BroadcastReceiver 的修复，几乎可以号称全面修复，不愧 Amigo（朋友）这个称号，能在危急时刻送来全面的帮助。</p>
+<p>首先我们先来看看如何使用这个库。<br>库地址：<a href="https://github.com/eleme/Amigo" target="_blank" rel="external">https://github.com/eleme/Amigo</a></p>
+<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><p>   在project 的<code>build.gradle</code> 中</p>
+   <figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">dependencies &#123;</div><div class="line">  classpath <span class="string">'me.ele:amigo:0.0.3'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>   在module 的<code>build.gradle</code> 中</p>
+   <figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">apply <span class="string">plugin:</span> <span class="string">'me.ele.amigo'</span></div></pre></td></tr></table></figure>
+<p>   就这样轻松的集成了Amigo。</p>
+<h3 id="生效补丁包"><a href="#生效补丁包" class="headerlink" title="生效补丁包"></a>生效补丁包</h3><p>   补丁包生效有两种方式可以选择：</p>
+<ul>
+<li><p>稍后生效补丁包</p>
+<p>  如果不想立即生效而是用户第二次打开App 时才打入补丁包，则可以将新的Apk 放到 <code>/data/data/{your pkg}/files/amigo/demo.apk</code>，第二次打开时就会自动生效。可以通过这个方法</p>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">File hotfixApk = Amigo.getHotfixApk(context);</div></pre></td></tr></table></figure>
+<p>  获取到新的Apk。<br>  同时，你也可以使用Amigo 提供的工具类将你的补丁包拷贝到指定的目录当中。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">FileUtils</span><span class="selector-class">.copyFile</span>(<span class="selector-tag">yourApkFile</span>, <span class="selector-tag">amigoApkFile</span>);</div></pre></td></tr></table></figure>
+</li>
+<li><p>立即生效补丁包</p>
+<p>  如果想要补丁包立即生效，调用以下两个方法之一，App 会立即重启，并且打入补丁包。</p>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Amigo.work(context);</div></pre></td></tr></table></figure>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Amigo.work(context, apkFile);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="删除补丁包"><a href="#删除补丁包" class="headerlink" title="删除补丁包"></a>删除补丁包</h3><p>如果需要删除掉已经下好的补丁包，可以通过这个方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Amigo.clear(context);</div></pre></td></tr></table></figure>
+<p><strong>提示</strong>：如果apk 发生了变化，Amigo 会自动清除之前的apk。</p>
+<h3 id="自定义界面"><a href="#自定义界面" class="headerlink" title="自定义界面"></a>自定义界面</h3><p>在热修复的过程中会有一些耗时的操作，这些操作会在一个新的进程中的Activity 中执行，所以你可以通过以下方式来自定义这个Activity。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;meta-data</div><div class="line">  android:name=<span class="string">"amigo_layout"</span></div><div class="line">  android:value=<span class="string">"&#123;your-layout-name&#125;"</span> /&gt;</div><div class="line"></div><div class="line">&lt;meta-data</div><div class="line">  android:name=<span class="string">"amigo_theme"</span></div><div class="line">  android:value=<span class="string">"&#123;your-theme-name&#125;"</span> /&gt;</div></pre></td></tr></table></figure>
+<h3 id="组件修复"><a href="#组件修复" class="headerlink" title="组件修复"></a>组件修复</h3><p>Amigo 目前能够支持修复Activity 和BroadcastReceiver。只需要将新的Activity 和BroadcastReceiver 加到新的Apk 包中就可以了。Service 和ContentProvider 将会在未来的版本中支持更新。</p>
+<p>集成 Amigo 十分简单，但是明白 Amigo 的实现更加重要。</p>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>在<code>Amigo</code>这个类中实现了主要的修复工作。我们一起追追看，到底是怎样的实现。</p>
+<h3 id="检查补丁包"><a href="#检查补丁包" class="headerlink" title="检查补丁包"></a>检查补丁包</h3><p><strong>Amigo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line"></div><div class="line"><span class="keyword">if</span> (demoAPk.exists() &amp;&amp; isSignatureRight(<span class="keyword">this</span>, demoAPk)) &#123;</div><div class="line">	 SharedPreferences sp = getSharedPreferences(SP_NAME, MODE_MULTI_PROCESS);</div><div class="line">	 String demoApkChecksum = checksum(demoAPk);</div><div class="line">	 <span class="keyword">boolean</span> isFirstRun = !sp.getString(NEW_APK_SIG, <span class="string">""</span>).equals(demoApkChecksum);</div><div class="line">...</div></pre></td></tr></table></figure>
+<p>这段代码中，首先检查是否有补丁包，并且签名正确，如果正确，则通过检验校验和是否与之前的检验和相同，不同则为检测到新的补丁包。</p>
+<h3 id="释放Apk"><a href="#释放Apk" class="headerlink" title="释放Apk"></a>释放Apk</h3><p>当这是新的补丁包时，首先第一件事就是释放。<code>ApkReleaser.work(this, layoutId, themeId)</code>在这个方法中最终会去开启一个 ApkReleaseActivity，而这个 Activity 的layout 和 theme 就是之前从配置中解析出来，在 work 方法中传进来的layoutId 和 themeId。</p>
+<p><strong>ApkReleaseActivity.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">   <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">	...</div><div class="line"></div><div class="line">   <span class="keyword">new</span> Thread() &#123;</div><div class="line">       <span class="meta">@Override</span></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">super</span>.run();</div><div class="line"></div><div class="line">           DexReleaser.releaseDexes(demoAPk.getAbsolutePath(), dexDir.getAbsolutePath());</div><div class="line">           NativeLibraryHelperCompat.copyNativeBinaries(demoAPk, nativeLibraryDir);</div><div class="line">           dexOptimization();</div><div class="line"></div><div class="line">           handler.sendEmptyMessage(WHAT_DEX_OPT_DONE);</div><div class="line">       &#125;</div><div class="line">   &#125;.start();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在 ApkReleaseActivity 的 <code>onCreate()</code> 方法中会开启一个线程去进行一系列的释放操作，这些操作十分耗时，目前在不同的机子上测试，从几秒到二十几秒之间不等，如果就这样黑屏在用户前面未免太不优雅，所以 Amigo 开启了一个新的进程，启动这个 Activity。<br>在这个线程中，做了三件微小的事情：</p>
+<ul>
+<li>释放 Dex 到指定目录</li>
+<li><p>拷贝 so 文件到 Amigo 的指定目录下<br>拷贝 so 文件是通过反射去调用 <code>NativeLibraryHelper</code>这个类的<code>nativeCopyNativeBinaries()</code>方法，但这个方法在不同版本上有不同的实现。</p>
+<pre><code>* 如果版本号在21以下
+
+    **NativeLibraryHelper**
+
+  <figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinariesIfNeededLI(<span class="built_in">File</span> apkFile, <span class="built_in">File</span> sharedLibraryDir) &#123;</div><div class="line">       final <span class="keyword">String</span> cpuAbi = Build.CPU_ABI;</div><div class="line">       final <span class="keyword">String</span> cpuAbi2 = Build.CPU_ABI2;</div><div class="line">       <span class="built_in">return</span> nativeCopyNativeBinaries(apkFile.getPath(), sharedLibraryDir.getPath(), cpuAbi,</div><div class="line">               cpuAbi2);</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+</code></pre></li>
+</ul>
+<pre><code>      会去反射调用这个方法，其中系统会自动判断出 primaryAbi 和 secondAbi。
+
+* 如果版本号在21以上
+`copyNativeBinariesIfNeededLI(file, file)`这个方法已经被废弃了，需要去反射调用这个方法
+
+    **NativeLibraryHelper**
+
+    <figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinaries(Handle handle, <span class="built_in">File</span> sharedLibraryDir, <span class="keyword">String</span> abi) &#123;</div><div class="line">       <span class="built_in">for</span> (<span class="keyword">long</span> apkHandle : handle.apkHandles) &#123;</div><div class="line">           <span class="keyword">int</span> res = nativeCopyNativeBinaries(apkHandle, sharedLibraryDir.getPath(), abi,</div><div class="line">                   handle.extractNativeLibs, HAS_NATIVE_BRIDGE);</div><div class="line">           <span class="built_in">if</span> (res != INSTALL_SUCCEEDED) &#123;</div><div class="line">               <span class="built_in">return</span> res;</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">       <span class="built_in">return</span> INSTALL_SUCCEEDED;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+
+
+    所以首先得去获得一个`NativeLibraryHelper$Handle`类的实例。之后就是找 primaryAbi。Amigo 先对机器的位数做了判断，如果是64位的机子，就只找64位的 abi，如果是32位的，就只找32位的 abi。然后将 Handle 实例当做参数去调用`NativeLibraryHelper`的`findSupportedAbi`来获得primaryAbi。最后再去调用`copyNativeBinaries`去拷贝 so 文件。
+
+对于 so 文件加载的原理可以参考[这篇文章](http://mp.weixin.qq.com/s?__biz=MzA3NTYzODYzMg==&amp;mid=2653577702&amp;idx=1&amp;sn=1288c77cd8fc2db68dc92cf18d675ace&amp;scene=4#wechat_redirect)
+</code></pre><ul>
+<li><p>优化 dex 文件</p>
+<p>  <strong>ApkReleaseActivity.java</strong></p>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">dexOptimization</span><span class="params">()</span> </span>&#123;</div><div class="line">	...</div><div class="line">       <span class="keyword">for</span> (File dex : validDexes) &#123;</div><div class="line">           <span class="keyword">new</span> DexClassLoader(dex.getAbsolutePath(), optimizedDir.getAbsolutePath(), <span class="keyword">null</span>, DexUtils.getPathClassLoader());</div><div class="line">           Log.e(TAG, <span class="string">"dexOptimization finished--&gt;"</span> + dex);</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<pre><code>DexClassLoader 没有做什么事情，只是调用了父类构造器，他的父类是 BaseDexClassLoader。在 BaseDexClassLoader 的构造器中又去构造了一个DexPathList 对象。
+在`DexPathList`类中，有一个 Element 数组
+
+**DexPathList**
+
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">/** list <span class="keyword">of</span> dex/resource (<span class="class"><span class="keyword">class</span> <span class="title">path</span>) <span class="title">elements</span> */</span></div><div class="line"><span class="keyword">private</span> final Element[] dexElements;</div></pre></td></tr></table></figure>
+
+Element 就是对 Dex 的封装。所以一个 Element 对应一个 Dex。这个 Element 在后文中会提到。
+</code></pre><p>  优化 dex 只需要在构造 DexClassLoader 对象的时候将 dex 的路径传进去，系统会在最后会通过<code>DexFile</code>的</p>
+<p>  <strong>DexFile.java</strong></p>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">native</span> <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">openDexFile</span><span class="params">(String sourceName, String outputName,</span></span></div><div class="line">      <span class="keyword">int</span> flags) <span class="keyword">throws</span> IOException;</div></pre></td></tr></table></figure>
+<p>   来这个方法来加载 dex，加载的同时会对其做优化处理。</p>
+<p>这三项操作完成之后，通知优化完毕，之后就关闭这个进程，将补丁包的校验和保存下来。这样第一步释放 Apk 就完成了。之后就是重头戏替换修复。</p>
+<h3 id="替换修复"><a href="#替换修复" class="headerlink" title="替换修复"></a>替换修复</h3><h4 id="替换classLoader"><a href="#替换classLoader" class="headerlink" title="替换classLoader"></a>替换classLoader</h4><p>Amigo 先行构造一个<code>AmigoClassLoader</code>对象，这个<code>AmigoClassLoader</code>是一个继承于<code>PathClassLoader</code>的类，把补丁包的 Apk 路径作为参数来构造<code>AmigoClassLoader</code>对象，之后通过反射替换掉 LoadedApk 的 ClassLoader。这一步是 Amigo 的关键所在。</p>
+<h4 id="替换Dex"><a href="#替换Dex" class="headerlink" title="替换Dex"></a>替换Dex</h4><p>之前提到，每个 dex 文件对应于一个<code>PathClassLoader</code>，其中有一个 Element[]，Element 是对于 dex 的封装。</p>
+<p><strong>Amigo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setDexElements</span><span class="params">(ClassLoader classLoader)</span> <span class="keyword">throws</span> NoSuchFieldException, IllegalAccessException </span>&#123;</div><div class="line">   Object dexPathList = getPathList(classLoader);</div><div class="line">   File[] listFiles = dexDir.listFiles();</div><div class="line"></div><div class="line">   List&lt;File&gt; validDexes = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">   <span class="keyword">for</span> (File listFile : listFiles) &#123;</div><div class="line">       <span class="keyword">if</span> (listFile.getName().endsWith(<span class="string">".dex"</span>)) &#123;</div><div class="line">           validDexes.add(listFile);</div><div class="line">       &#125;</div><div class="line">   &#125;</div><div class="line">   File[] dexes = validDexes.toArray(<span class="keyword">new</span> File[validDexes.size()]);</div><div class="line">   Object originDexElements = readField(dexPathList, <span class="string">"dexElements"</span>);</div><div class="line">   Class&lt;?&gt; localClass = originDexElements.getClass().getComponentType();</div><div class="line">   <span class="keyword">int</span> length = dexes.length;</div><div class="line">   Object dexElements = Array.newInstance(localClass, length);</div><div class="line">   <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; length; k++) &#123;</div><div class="line">       Array.set(dexElements, k, getElementWithDex(dexes[k], optimizedDir));</div><div class="line">   &#125;</div><div class="line">   writeField(dexPathList, <span class="string">"dexElements"</span>, dexElements);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在替换dex时，Amigo 将补丁包中每个 dex 对应的 Element 对象拿出来，之后组成新的 Element[]，通过反射，将现有的 Element[] 数组替换掉。<br>在 QZone 的实现方案中，他们是通过将新的 dex 插到 Element[] 数组的第一个位置，这样就会先加载新的 dex ，微信的方案是下发一个 DiffDex，然后在运行时与旧的 dex 合成一个新的 dex。但是 Amigo 是下发一个完整的 dex直接替换掉了原来的 dex。与其他的方案相比，Amigo 因为直接替换原来的 dex ,兼容性更好，能够支持修复的方面也更多。但是这也导致了 Amigo 的补丁包会较大，当然，也可以发一个利用 BsDiff 生成的差分包，在本地合成新的 apk 之后再放到 Amigo 的指定目录下。</p>
+<h4 id="替换动态链接库"><a href="#替换动态链接库" class="headerlink" title="替换动态链接库"></a>替换动态链接库</h4><p><strong>Amigo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setNativeLibraryDirectories</span><span class="params">(AmigoClassLoader hackClassLoader)</span></span></div><div class="line">            <span class="keyword">throws</span> InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, NoSuchFieldException &#123;</div><div class="line">   injectSoAtFirst(hackClassLoader, nativeLibraryDir.getAbsolutePath());</div><div class="line">   nativeLibraryDir.setReadOnly();</div><div class="line">   File[] libs = nativeLibraryDir.listFiles();</div><div class="line">   <span class="keyword">if</span> (libs != <span class="keyword">null</span> &amp;&amp; libs.length &gt; <span class="number">0</span>) &#123;</div><div class="line">       <span class="keyword">for</span> (File lib : libs) &#123;</div><div class="line">           lib.setReadOnly();</div><div class="line">       &#125;</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>so 文件的替换跟 QZone 替换 dex 原理相差不多，也是利用 ClassLoader 加载 library 的时候，将新的 library 加到数组前面，保证先加载的是新的 library。但是这里会有几个小坑。</p>
+<p><strong>DexUtils.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">injectSoAtFirst</span><span class="params">(ClassLoader hackClassLoader, String soPath)</span> <span class="keyword">throws</span> NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException </span>&#123;</div><div class="line">        Object[] baseDexElements = getNativeLibraryDirectories(hackClassLoader);</div><div class="line">        Object newElement;</div><div class="line">        <span class="keyword">if</span> (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.M) &#123;</div><div class="line">            Constructor constructor = baseDexElements[<span class="number">0</span>].getClass().getConstructors()[<span class="number">0</span>];</div><div class="line">            constructor.setAccessible(<span class="keyword">true</span>);</div><div class="line">            Class&lt;?&gt;[] parameterTypes = constructor.getParameterTypes();</div><div class="line">            Object[] args = <span class="keyword">new</span> Object[parameterTypes.length];</div><div class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; parameterTypes.length; i++) &#123;</div><div class="line">                <span class="keyword">if</span> (parameterTypes[i] == File.class) &#123;</div><div class="line">                    args[i] = <span class="keyword">new</span> File(soPath);</div><div class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (parameterTypes[i] == <span class="keyword">boolean</span>.class) &#123;</div><div class="line">                    args[i] = <span class="keyword">true</span>;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            newElement = constructor.newInstance(args);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            newElement = <span class="keyword">new</span> File(soPath);</div><div class="line">        &#125;</div><div class="line">        Object newDexElements = Array.newInstance(baseDexElements[<span class="number">0</span>].getClass(), <span class="number">1</span>);</div><div class="line">        Array.set(newDexElements, <span class="number">0</span>, newElement);</div><div class="line">        Object allDexElements = combineArray(newDexElements, baseDexElements);</div><div class="line">        Object pathList = getPathList(hackClassLoader);</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.M) &#123;</div><div class="line">            writeField(pathList, <span class="string">"nativeLibraryPathElements"</span>, allDexElements);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            writeField(pathList, <span class="string">"nativeLibraryDirectories"</span>, allDexElements);</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>注入 so 文件到数组时，会发现在不同的版本上封装 so 文件的是不同的类，在版本23以下，是File</p>
+<p><strong>DexPathList.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/** list of native library directory elements */</span></div><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> File[] nativeLibraryDirectories;</div></pre></td></tr></table></figure>
+<p>在23以上却是改成了Element</p>
+<p><strong>DexPathList.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/** List of native library path elements. */</span></div><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> Element[] nativeLibraryPathElements;</div></pre></td></tr></table></figure>
+<p>因此在23以上，Amigo 通过反射去构造一个 Element 对象。之后就是将 so 文件插到数组的第一个位置就行了。<br>第二个小坑是nativeLibraryDir要设置成readOnly。</p>
+<p><strong>DexPathList.java</strong></p>
+<figure class="highlight gauss"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">public <span class="keyword">String</span> findNativeLibrary(<span class="keyword">String</span> name) &#123;</div><div class="line">	  maybeInit();</div><div class="line">	  <span class="keyword">if</span> (isDirectory) &#123;</div><div class="line">	      <span class="keyword">String</span> path = <span class="keyword">new</span> File(dir, name).<span class="built_in">getPath</span>();</div><div class="line">	      <span class="keyword">if</span> (IoUtils.canOpenReadOnly(path)) &#123;</div><div class="line">	          <span class="keyword">return</span> path;</div><div class="line">	      &#125;</div><div class="line">	  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (zipFile != <span class="built_in">null</span>) &#123;</div><div class="line">	      <span class="keyword">String</span> entryName = <span class="keyword">new</span> File(dir, name).<span class="built_in">getPath</span>();</div><div class="line">	      <span class="keyword">if</span> (isZipEntryExistsAndStored(zipFile, entryName)) &#123;</div><div class="line">	        <span class="keyword">return</span> zip.<span class="built_in">getPath</span>() + zipSeparator + entryName;</div><div class="line">	      &#125;</div><div class="line">	  &#125;</div><div class="line">	  <span class="keyword">return</span> <span class="built_in">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在ClassLoader 去寻找本地库的时候，如果 so 文件没有设置成ReadOnly的话是会不会返回路径的，这样就会报错了。</p>
+<h4 id="替换资源文件"><a href="#替换资源文件" class="headerlink" title="替换资源文件"></a>替换资源文件</h4><p><strong>Amigo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line">AssetManager assetManager = AssetManager.class.newInstance();</div><div class="line">Method addAssetPath = getDeclaredMethod(AssetManager.class, <span class="string">"addAssetPath"</span>, String.class);</div><div class="line">addAssetPath.setAccessible(<span class="keyword">true</span>);</div><div class="line">addAssetPath.invoke(assetManager, demoAPk.getAbsolutePath());</div><div class="line">setAPKResources(assetManager)</div><div class="line">...</div></pre></td></tr></table></figure>
+<p>想要更新资源文件，只需要更新<code>Resource</code>中的 AssetManager 字段。<code>AssetManager</code>提供了一个方法<code>addAssetPath</code>。将新的资源文件路径加到<code>AssetManager</code>中就可以了。在不同的 configuration 下，会对应不同的 Resource 对象，所以通过 ResourceManager 拿到所有的 configuration 对应的 resource 然后替换其 assetManager。</p>
+<h4 id="替换原有-Application"><a href="#替换原有-Application" class="headerlink" title="替换原有 Application"></a>替换原有 Application</h4><p><strong>Amigo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line">Class acd = classLoader.loadClass(<span class="string">"me.ele.amigo.acd"</span>);</div><div class="line">String applicationName = (String) readStaticField(acd, <span class="string">"n"</span>);</div><div class="line">Application application = (Application) classLoader.loadClass(applicationName).newInstance();</div><div class="line">Method attach = getDeclaredMethod(Application.class, <span class="string">"attach"</span>, Context.class);</div><div class="line">attach.setAccessible(<span class="keyword">true</span>);</div><div class="line">attach.invoke(application, getBaseContext());</div><div class="line">setAPKApplication(application);</div><div class="line">application.onCreate();</div><div class="line">...</div></pre></td></tr></table></figure>
+<p>在编译过程中，Amigo 的插件将 app 的 application 替换成了 Amigo，并且将原来的 application 的 name 保存在了一个名为<code>acd</code>的类中，该修复的都修复完了是时候将原来的 application 替换回来了。拿到原有 Application 名字之后先调用 application 的<code>attach(context)</code>，然后将 application 设回到 loadedApk 中，最后调用<code>oncreate()</code>，执行原有 Application 中的逻辑。<br>这之后，一个修复完的 app 就出现在用户面前。优秀的库~</p>
+<h3 id="Amigo-插件"><a href="#Amigo-插件" class="headerlink" title="Amigo 插件"></a>Amigo 插件</h3><p>前文提到 Amigo 在编译期利用插件替换了 app 原有的 application，那这一个操作是怎么实现的呢？</p>
+<p><strong>AmigoPlugin.groovy</strong></p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">File manifestFile = output.processManifest.manifestOutputFile</div><div class="line">                        <span class="keyword">def</span> manifest = <span class="keyword">new</span> XmlParser().parse(manifestFile)</div><div class="line">                        <span class="keyword">def</span> androidTag = <span class="keyword">new</span> Namespace(<span class="string">"http://schemas.android.com/apk/res/android"</span>, <span class="string">'android'</span>)</div><div class="line">                        applicationName = manifest.application[<span class="number">0</span>].attribute(androidTag.name)</div><div class="line">                        manifestFile.text = manifestFile.text.replace(applicationName, <span class="string">"me.ele.amigo.Amigo"</span>)</div></pre></td></tr></table></figure>
+<p>首先，Amigo Plugin 将 AndroidManifest.xml 文件中的applicationName 替换成 Amigo。</p>
+<p><strong>AmigoPlugin.groovy</strong></p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">Node node = (<span class="keyword">new</span> XmlParser()).parse(manifestFile)</div><div class="line">Node appNode = <span class="literal">null</span></div><div class="line"><span class="keyword">for</span> (Node <span class="string">n :</span> node.children()) &#123;</div><div class="line">   <span class="keyword">if</span> (n.name().equals(<span class="string">"application"</span>)) &#123;</div><div class="line">       appNode = n;</div><div class="line">       <span class="keyword">break</span></div><div class="line">   &#125;</div><div class="line">&#125;</div><div class="line">Node hackAppNode = <span class="keyword">new</span> Node(appNode, <span class="string">"activity"</span>)</div><div class="line">hackAppNode.attributes().put(<span class="string">"android:name"</span>, applicationName)</div><div class="line">manifestFile.text = XmlUtil.serialize(node)</div></pre></td></tr></table></figure>
+<p>之后，Amigo Plugin 做了很 hack 的一步，就是在 AndroidManifest.xml 中将原来的 application 做为一个 Activity 。我们知道 MultiDex 分包的规则中，一定会将 Activity 放到主 dex 中，Amigo Plugin 为了保证原来的 application 被替换后仍然在主 dex 中，就做了这个十分 hack 的一步。机智的少年。</p>
+<p>接下来会再去判断是否开启了混淆，如果有混淆的话，查找 mapping 文件，将 applicationName 字段换成混淆后的名字。</p>
+<p>下一步会去执行 GenerateCodeTask，在这个 task 中会生成一个 Java 文件，这个文件就是上文提到过得<code>acd.java</code>，并且将模板中的 appName 替换成applicationName。<br>然后执行 javaCompile task，编译 Java 代码。<br>最后还要做一件事，就是修改 maindexlist.txt。被定义在这个文件中的类会被加到主 dex 中，所以 Amigo plugin 在<code>collectMultiDexInfo</code>方法中扫描加到主 dex 的类，然后再在扫描的结果中加上 acd.class，把这些内容全部加到 maindexlist.txt。到此Amigo plugin 的任务就完成了。<br>Amigo plugin 的主要目的是在编译期用 amigo 替换掉原来的 application，但是还得保存下来这个 application，因为之后还得在运行时将这个 application 替换回来。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Amigo 几乎实现了全方位的修复，通过替换 ClassLoader，直接全量替换 dex 的思路，保证了兼容性，成功率，但是可能下发的补丁包会比较大。还有一点 Amigo 的精彩之处就是利用 Amigo 替换了 app 原有的 application，这一点保证了 Amigo 连 application 都能修复。以后可能唯一不能修复的就是 Amigo 自身了。</p>
+<p>最后我们比较下目前几个 hotfix 方案：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Amigo</th>
+<th>Tinker</th>
+<th>nuwa/QZone</th>
+<th>AndFix</th>
+<th>Dexposed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>类替换</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr>
+<td>lib替换</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr>
+<td>资源替换</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr>
+<td>全平台支持</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+<tr>
+<td>即时生效</td>
+<td>optional</td>
+<td>no</td>
+<td>no</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>性能损耗</td>
+<td>无</td>
+<td>较小</td>
+<td>较大</td>
+<td>较小</td>
+<td>较小</td>
+</tr>
+<tr>
+<td>补丁包大小</td>
+<td>较大</td>
+<td>较小</td>
+<td>较大</td>
+<td>一般</td>
+<td>一般</td>
+</tr>
+<tr>
+<td>开发透明</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr>
+<td>复杂度</td>
+<td>无</td>
+<td>较低</td>
+<td>较低</td>
+<td>复杂</td>
+<td>复杂</td>
+</tr>
+<tr>
+<td>gradle支持</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr>
+<td>接口文档</td>
+<td>丰富</td>
+<td>丰富</td>
+<td>一般</td>
+<td>一般</td>
+<td>较少</td>
+</tr>
+<tr>
+<td>占Rom体积</td>
+<td>较大</td>
+<td>较大</td>
+<td>较小</td>
+<td>较小</td>
+<td>较小</td>
+</tr>
+<tr>
+<td>成功率</td>
+<td>100%</td>
+<td>较好</td>
+<td>很高</td>
+<td>一般</td>
+<td>一般</td>
+</tr>
+</tbody>
+</table>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;Amigo-源码解读&quot;&gt;&lt;a href=&quot;#Amigo-源码解读&quot; class=&quot;headerlink&quot; title=&quot;Amigo 源码解读&quot;&gt;&lt;/a&gt;Amigo 源码解读&lt;/h1&gt;&lt;p&gt;现在 hotfix 框架有很多，原理大同小异，基本上是基于&lt;a href=&quot;
+    
+    </summary>
+    
+      <category term="Android" scheme="http://mobilists.eleme.io/categories/Android/"/>
+    
+    
+      <category term="Android" scheme="http://mobilists.eleme.io/tags/Android/"/>
+    
+      <category term="Amigo" scheme="http://mobilists.eleme.io/tags/Amigo/"/>
+    
+      <category term="Hotfix" scheme="http://mobilists.eleme.io/tags/Hotfix/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Amigo---Android hotfix terminator</title>
+    <link href="http://mobilists.eleme.io/2016/08/26/terminator/"/>
+    <id>http://mobilists.eleme.io/2016/08/26/terminator/</id>
+    <published>2016-08-26T04:00:00.000Z</published>
+    <updated>2017-02-07T09:21:46.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="Amigo"><a href="#Amigo" class="headerlink" title="Amigo"></a>Amigo</h2><p><img src="http://amigotheband.com/wp-content/uploads/2015/02/logo_amigo-yellow.png" alt="amigo.png">  </p>
+<p>An old Chinese saying goes: <strong>Road to Jane</strong></p>
+<p>古人有云：<strong>大道至简</strong></p>
+<p>so…</p>
+<h3 id="RTFC"><a href="#RTFC" class="headerlink" title="RTFC"></a>RTFC</h3><p><a href="https://github.com/eleme/amigo" target="_blank" rel="external">Amigo</a> has opened source code in github, so everyone has access to it;</p>
+<p>and we use <strong>Apache License v2.0</strong> as amigo’s license, so everyone can use &amp; modify it.</p>
+<h3 id="usage"><a href="#usage" class="headerlink" title="usage"></a>usage</h3><figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">classpath <span class="string">'me.ele:amigo:0.0.3'</span></div><div class="line">...</div><div class="line"></div><div class="line">apply <span class="string">plugin:</span> <span class="string">'me.ele.amigo'</span></div><div class="line">...</div></pre></td></tr></table></figure>
+<p>you are good to go now, as simple as this.</p>
+<h3 id="if-you-don’t-need-hotfix-work-immediately"><a href="#if-you-don’t-need-hotfix-work-immediately" class="headerlink" title="if you don’t need hotfix work immediately"></a>if you don’t need hotfix work immediately</h3><p>you just need to download new apk file to /data/data/{your pkg}/files/amigo/demo.apk,<br>when app restarts next time, hotfix apk will be loaded as fresh as new.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">File hotfixApk = Amigo.getHotfixApk(context);</div></pre></td></tr></table></figure>
+<h3 id="work-immediately-app-will-restart-immediately"><a href="#work-immediately-app-will-restart-immediately" class="headerlink" title="work immediately, app will restart immediately"></a>work immediately, app will restart immediately</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Amigo.work(context);</div><div class="line"></div><div class="line">Amigo.work(context, apkFile);</div></pre></td></tr></table></figure>
+<h3 id="maybe-hotfix-needs-to-be-cleared"><a href="#maybe-hotfix-needs-to-be-cleared" class="headerlink" title="maybe hotfix needs to be cleared"></a>maybe hotfix needs to be cleared</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Amigo.clear(context);</div></pre></td></tr></table></figure>
+<h3 id="some-time-tense-operation-is-handled-in-a-new-process-with-an-activity-you-may-customize-it"><a href="#some-time-tense-operation-is-handled-in-a-new-process-with-an-activity-you-may-customize-it" class="headerlink" title="some time-tense operation is handled in a new process with an activity, you may customize it"></a>some time-tense operation is handled in a new process with an activity, you may customize it</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">meta-data</span></span></div><div class="line">    <span class="attr">android:name</span>=<span class="string">"amigo_layout"</span></div><div class="line">    <span class="attr">android:value</span>=<span class="string">"&#123;your-layout-name&#125;"</span> /&gt;</div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">meta-data</span></span></div><div class="line">    <span class="attr">android:name</span>=<span class="string">"amigo_theme"</span></div><div class="line">    <span class="attr">android:value</span>=<span class="string">"&#123;your-theme-name&#125;"</span> /&gt;</div></pre></td></tr></table></figure>
+<h3 id="now-Amigo-support-to-load-new-Activity-and-BroadcastReceiver"><a href="#now-Amigo-support-to-load-new-Activity-and-BroadcastReceiver" class="headerlink" title="now Amigo support to load new Activity and BroadcastReceiver"></a>now Amigo support to load new Activity and BroadcastReceiver</h3><p>you can add activities &amp; receivers whatever you like to add in your hotfix apk,<br>waiting for <strong>Service</strong> &amp; <strong>ContentProvider</strong></p>
+<p>if you would like to RTFC, please checkout <strong>support_new_added_components</strong> branch</p>
+<p>this’s in <strong>beta</strong> version for now, so you may use this</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">classpath <span class="string">'me.ele:amigo:0.0.1-beta1'</span></div><div class="line">...</div></pre></td></tr></table></figure>
+<h3 id="play-with-demo"><a href="#play-with-demo" class="headerlink" title="play with demo"></a>play with demo</h3><p>if you try to experience Amigo’s magic, you can integrate with your own app as you like;<br>also you can play with this app demo following the procedures below.</p>
+<ul>
+<li><p>gradle clean assembleRelease &amp; adb install …/build/outputs/apk/app-release.apk</p>
+</li>
+<li><p>change code wherever you like &amp; gradle clean assembleRelease</p>
+</li>
+<li><p>adb push …/build/outputs/apk/app-release.apk /sdcard/demo.apk</p>
+</li>
+<li><p>kill Amigo demo by yourself &amp; restart to check if your change works</p>
+</li>
+</ul>
+<h3 id="license"><a href="#license" class="headerlink" title="license"></a>license</h3><p>  Copyright 2016 ELEME Inc.</p>
+<p>  Licensed under the Apache License, Version 2.0 (the “License”);<br>  you may not use this file except in compliance with the License.<br>  You may obtain a copy of the License at</p>
+<pre><code>http://www.apache.org/licenses/LICENSE-2.0
+</code></pre><p>  Unless required by applicable law or agreed to in writing, software<br>  distributed under the License is distributed on an “AS IS” BASIS,<br>  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<br>  See the License for the specific language governing permissions and<br>  limitations under the License.</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;Amigo&quot;&gt;&lt;a href=&quot;#Amigo&quot; class=&quot;headerlink&quot; title=&quot;Amigo&quot;&gt;&lt;/a&gt;Amigo&lt;/h2&gt;&lt;p&gt;&lt;img src=&quot;http://amigotheband.com/wp-content/uploads/2015/
+    
+    </summary>
+    
+      <category term="Android" scheme="http://mobilists.eleme.io/categories/Android/"/>
+    
+    
+      <category term="Android" scheme="http://mobilists.eleme.io/tags/Android/"/>
+    
+      <category term="Hotfix" scheme="http://mobilists.eleme.io/tags/Hotfix/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>浅谈Mantle</title>
+    <link href="http://mobilists.eleme.io/2016/06/20/%E6%B5%85%E8%B0%88Mantle/"/>
+    <id>http://mobilists.eleme.io/2016/06/20/浅谈Mantle/</id>
+    <published>2016-06-20T09:12:15.000Z</published>
+    <updated>2017-02-07T09:21:46.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>在公司使用<code>Mantle</code>也差不多有一年，其间有痛有笑，难一一道明。使用期间总算积累了一些经验，在此献丑，或能有益于人；由于是一些知识点的汇总，难免拉杂干涩，写的断断续续，行文并不流畅。所有索引都随文给出，不另外附录；建议核心部分，结合代码理解。另如有错漏，祈谅！</p>
+<h1 id="解析过程"><a href="#解析过程" class="headerlink" title="解析过程"></a><font color="#4590a3">解析过程</font></h1><p><code>Mantle</code>的核心类是<code>MTLJSONAdapter</code>，负责整个解析过程。下面以<code>JSON To Object</code>为例粗略介绍一下的解析流程。</p>
+<p><a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L259" target="_blank" rel="external">相关代码见此</a></p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">- (<span class="keyword">id</span>)modelFromJSONDictionary:(<span class="built_in">NSDictionary</span> *)JSONDictionary error:(<span class="built_in">NSError</span> **)error &#123;</div><div class="line"><span class="comment">// 开始 处理由一堆相关的class来map同一类字典，少见，可忽略</span></div><div class="line"><span class="comment">// 为了结构清晰，删除了这部分代码</span></div><div class="line"><span class="comment">// 结束 处理由一堆相关的class来map同一类字典，少见，可忽略</span></div><div class="line"></div><div class="line"><span class="comment">// 开始 常规的解析流程</span></div><div class="line">	<span class="built_in">NSMutableDictionary</span> *dictionaryValue = [[<span class="built_in">NSMutableDictionary</span> alloc] initWithCapacity:JSONDictionary.count];</div><div class="line"></div><div class="line">	<span class="keyword">for</span> (<span class="built_in">NSString</span> *propertyKey <span class="keyword">in</span> [<span class="keyword">self</span>.modelClass propertyKeys]) &#123;</div><div class="line"></div><div class="line">    <span class="comment">// 开始 单个property的解析</span></div><div class="line">		<span class="keyword">id</span> JSONKeyPaths = <span class="keyword">self</span>.JSONKeyPathsByPropertyKey[propertyKey];</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (JSONKeyPaths == <span class="literal">nil</span>) <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">		<span class="keyword">id</span> value;</div><div class="line">    <span class="comment">// 开始 花式keypath处理</span></div><div class="line">    <span class="comment">// 同样，这部分代码也省略了</span></div><div class="line">    <span class="comment">// 结束花式keypath处理</span></div><div class="line">		<span class="keyword">if</span> (value == <span class="literal">nil</span>) <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">		<span class="keyword">@try</span> &#123;</div><div class="line">      <span class="comment">// 开始 常规的property解析流程</span></div><div class="line">			<span class="built_in">NSValueTransformer</span> *transformer = <span class="keyword">self</span>.valueTransformersByPropertyKey[propertyKey];</div><div class="line">			<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) &#123;</div><div class="line">				<span class="comment">// Map NSNull -&gt; nil for the transformer, and then back for the</span></div><div class="line">				<span class="comment">// dictionary we're going to insert into.</span></div><div class="line">				<span class="keyword">if</span> ([value isEqual:<span class="built_in">NSNull</span>.null]) value = <span class="literal">nil</span>;</div><div class="line"></div><div class="line">				<span class="keyword">if</span> ([transformer respondsToSelector:<span class="keyword">@selector</span>(transformedValue:success:error:)]) &#123;</div><div class="line">					<span class="keyword">id</span>&lt;<span class="built_in">MTLTransformerErrorHandling</span>&gt; errorHandlingTransformer = (<span class="keyword">id</span>)transformer;</div><div class="line"></div><div class="line">					<span class="built_in">BOOL</span> success = <span class="literal">YES</span>;</div><div class="line">					value = [errorHandlingTransformer transformedValue:value success:&amp;success error:error];</div><div class="line"></div><div class="line">					<span class="keyword">if</span> (!success) <span class="keyword">return</span> <span class="literal">nil</span>;</div><div class="line">				&#125; <span class="keyword">else</span> &#123;</div><div class="line">					value = [transformer transformedValue:value];</div><div class="line">				&#125;</div><div class="line"></div><div class="line">				<span class="keyword">if</span> (value == <span class="literal">nil</span>) value = <span class="built_in">NSNull</span>.null;</div><div class="line">			&#125;</div><div class="line"></div><div class="line">			dictionaryValue[propertyKey] = value;</div><div class="line">      <span class="comment">// 结束 常规的property解析流程</span></div><div class="line">		&#125; <span class="keyword">@catch</span> (<span class="built_in">NSException</span> *ex) &#123;</div><div class="line">			<span class="built_in">NSLog</span>(<span class="string">@"*** Caught exception %@ parsing JSON key path \"%@\" from: %@"</span>, ex, JSONKeyPaths, JSONDictionary);</div><div class="line">		&#125;</div><div class="line">    <span class="comment">// 结束 单个property的解析</span></div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">id</span> model = [<span class="keyword">self</span>.modelClass modelWithDictionary:dictionaryValue error:error];</div><div class="line"></div><div class="line">	<span class="keyword">return</span> [model validate:error] ? model : <span class="literal">nil</span>;</div><div class="line"><span class="comment">// 结束 常规解析流程</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个函数前面部分是处理类似类簇的一类model，并不是很常见的需求，这里就不展开；接下来就是整个<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L284-L362" target="_blank" rel="external">常规的解析流程</a>, 无非是遍历整个<code>propertyKeys</code>,  依次解析。下面跟踪一遍单个<code>property</code>的解析。</p>
+<blockquote>
+<p>单个<code>property</code>的解析前面一小半是处理花式<code>keypath</code>的写法，无关大体。真正的解析其实就是这<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L316-L336" target="_blank" rel="external">20行代码</a>。 处理<code>keypath</code>拿到单个<code>property</code>对应的<code>JSON Value</code>, 然后通过<code>valueTransformersByPropertyKey</code>取出对应transformer，转化<code>Value</code>为相应的格式。单个<code>property</code>的解析完成。</p>
+</blockquote>
+<p>解析完所有<code>propertyKeys</code>，就会通过转化后的dic集由<code>modelWithDictionary:</code>去初始化<code>ModelClass</code>，这个过程会走一下<code>validate</code>流程然后通过<code>KVC</code>去设置<code>property</code>。</p>
+<h1 id="三类Transformer"><a href="#三类Transformer" class="headerlink" title="三类Transformer"></a><font color="#4590a3">三类Transformer</font></h1><p>综上可以看出整个解析流程其实非常清晰明，问题核心在<code>transformer</code>。<code>transformer</code>的生成<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L365" target="_blank" rel="external">相关代码在此</a>。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div></pre></td><td class="code"><pre><div class="line">+ (<span class="built_in">NSDictionary</span> *)valueTransformersForModelClass:(Class)modelClass &#123;</div><div class="line">	<span class="built_in">NSParameterAssert</span>(modelClass != <span class="literal">nil</span>);</div><div class="line">	<span class="built_in">NSParameterAssert</span>([modelClass conformsToProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">MTLJSONSerializing</span>)]);</span></div><div class="line"></div><div class="line">	<span class="built_in">NSMutableDictionary</span> *result = [<span class="built_in">NSMutableDictionary</span> dictionary];</div><div class="line"></div><div class="line">	<span class="keyword">for</span> (<span class="built_in">NSString</span> *key <span class="keyword">in</span> [modelClass propertyKeys]) &#123;</div><div class="line">    <span class="comment">// keyTransformer 的生成</span></div><div class="line">		SEL selector = <span class="built_in">MTLSelectorWithKeyPattern</span>(key, <span class="string">"JSONTransformer"</span>);</div><div class="line">		<span class="keyword">if</span> ([modelClass respondsToSelector:selector]) &#123;</div><div class="line">			IMP imp = [modelClass methodForSelector:selector];</div><div class="line">			<span class="built_in">NSValueTransformer</span> * (*function)(<span class="keyword">id</span>, SEL) = (__typeof__(function))imp;</div><div class="line">			<span class="built_in">NSValueTransformer</span> *transformer = function(modelClass, selector);</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) result[key] = transformer;</div><div class="line"></div><div class="line">			<span class="keyword">continue</span>;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		<span class="keyword">if</span> ([modelClass respondsToSelector:<span class="keyword">@selector</span>(JSONTransformerForKey:)]) &#123;</div><div class="line">			<span class="built_in">NSValueTransformer</span> *transformer = [modelClass JSONTransformerForKey:key];</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) &#123;</div><div class="line">				result[key] = transformer;</div><div class="line">				<span class="keyword">continue</span>;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		objc_property_t property = class_getProperty(modelClass, key.UTF8String);</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (property == <span class="literal">NULL</span>) <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">		mtl_propertyAttributes *attributes = mtl_copyPropertyAttributes(property);</div><div class="line">		@onExit &#123;</div><div class="line">			free(attributes);</div><div class="line">		&#125;;</div><div class="line"></div><div class="line">		<span class="built_in">NSValueTransformer</span> *transformer = <span class="literal">nil</span>;</div><div class="line">    <span class="comment">// type transformer 的生成</span></div><div class="line">		<span class="keyword">if</span> (*(attributes-&gt;type) == *(<span class="keyword">@encode</span>(<span class="keyword">id</span>))) &#123;</div><div class="line">			Class propertyClass = attributes-&gt;objectClass;</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (propertyClass != <span class="literal">nil</span>) &#123;</div><div class="line">				transformer = [<span class="keyword">self</span> transformerForModelPropertiesOfClass:propertyClass];</div><div class="line">			&#125;</div><div class="line"></div><div class="line"></div><div class="line">			<span class="comment">// For user-defined MTLModel, try parse it with dictionaryTransformer.</span></div><div class="line">			<span class="keyword">if</span> (<span class="literal">nil</span> == transformer &amp;&amp; [propertyClass conformsToProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">MTLJSONSerializing</span>)]) </span>&#123;</div><div class="line">				transformer = [<span class="keyword">self</span> dictionaryTransformerWithModelClass:propertyClass];</div><div class="line">			&#125;</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (transformer == <span class="literal">nil</span>) transformer = [<span class="built_in">NSValueTransformer</span> mtl_validatingTransformerForClass:propertyClass ?: <span class="built_in">NSObject</span>.class];</div><div class="line">		&#125; <span class="keyword">else</span> &#123;</div><div class="line">			transformer = [<span class="keyword">self</span> transformerForModelPropertiesOfObjCType:attributes-&gt;type] ?: [<span class="built_in">NSValueTransformer</span> mtl_validatingTransformerForClass:<span class="built_in">NSValue</span>.class];</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) result[key] = transformer;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">return</span> result;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>按性质大概可以分为三类<code>transformer</code>：</p>
+<h2 id="keyTransformer"><a href="#keyTransformer" class="headerlink" title="keyTransformer"></a><font color="#5F9EA0">keyTransformer</font></h2><p>key为<code>property name</code>。</p>
+<blockquote>
+<p>首先根据<code>key</code>动态构造的<code>SEL</code>(<code>keyJSONTransformer</code>)去获取；未果则转入<code>JSONTransformerForKey:(NSSString *)key</code>获取；未果则继续获取第二类transformer。目前这类transformer主要集中在对<code>NSArray</code>（NSArray目前业界好像也有一些讨巧的做法，后面介绍）和一些非常规的<code>transformer</code>的处理，因为此处理论上你可以提供任意类型的<code>transformer</code>来满足复杂多样的需求。</p>
+</blockquote>
+<h2 id="type-transformer"><a href="#type-transformer" class="headerlink" title="type transformer"></a><font color="#5F9EA0">type transformer</font></h2><p><code>type</code>即为通过runtime获取<code>property</code>的类型，对象类型和基础类型会有不同的处理。</p>
+<h3 id="对象类型"><a href="#对象类型" class="headerlink" title="对象类型"></a><font color="#35c0a3">对象类型</font></h3><blockquote>
+<p>先根据<code>transformerForModelPropertiesOfClass:</code>去获取针对一些预置的,未实现<code>MTLJSONSerializing</code>类型的<code>transformer</code>,比如NSURL，NSDate（目前Mantle里面只实现了NSURL,至于为什么没有实现别的类型见这个<a href="https://github.com/Mantle/Mantle/issues/147" target="_blank" rel="external">issue</a>）；未果,当前<code>Class</code>若实现<code>MTLJSONSerializing</code>, 则为它生成一个transformer，这个是我们应用中的大部分场景，即一大堆自定义的<code>Model</code>，我们不需要做任何其他的事，只需要声明<code>property</code>时写上对应的类型就可以了，是不是人心大快！仍旧未果，就会通过<code>mtl_validatingTransformerForClass:</code>去生成一个<code>validate</code>的transformer（这类transformer的作用后面详述）。</p>
+</blockquote>
+<h3 id="基础类型"><a href="#基础类型" class="headerlink" title="基础类型"></a><font color="#35c0a3">基础类型</font></h3><blockquote>
+<p>比较简单。首先通过<code>transformerForModelPropertiesOfObjCType:</code>获取一个<code>transformer</code>;未果也是生成一个<code>validate</code>的<code>transformer</code>。</p>
+</blockquote>
+<h2 id="KVC也算一类transformer"><a href="#KVC也算一类transformer" class="headerlink" title="KVC也算一类transformer"></a><font color="#5F9EA0">KVC也算一类transformer</font></h2><blockquote>
+<p>当然除了这两类的<code>transformer</code>，因为最终<code>setValue</code>时会调用<code>KVC</code>去完成，<code>KVC</code>对基础类型的<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/KeyValueCoding/Articles/DataTypes.html#//apple_ref/doc/uid/20002171-BAJEAIEE" target="_blank" rel="external">自动解包</a>，也可以算作是一类<code>transformer</code>。</p>
+</blockquote>
+<h1 id="Transformer的使用"><a href="#Transformer的使用" class="headerlink" title="Transformer的使用"></a><font color="#4590a3">Transformer的使用</font></h1><h2 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a><font color="#5F9EA0">基本使用</font></h2><p>结合上面的解析和<code>transformer</code>的生成流程，可以看出我们的生活确实简单了。首先在<code>property</code>里面声明好属性，然后通过<code>JSONKeyPathsByPropertyKey</code>做好<code>property</code>和<code>json key</code>的映射关系，基本上整个<code>Model</code>基本就完成了。</p>
+<h2 id="Array的处理"><a href="#Array的处理" class="headerlink" title="Array的处理"></a><font color="#5F9EA0">Array的处理</font></h2><p>但这个过程有个例外，就是对<code>NSArray</code>的处理。目前OC里面的<code>Array</code>泛型是编译时的，运行时获取不到数组中对象类型，这就需要我们通过通过<code>arrayTransformerWithModelClass：</code>构造一个上面的<code>typeTransformer</code>返回。但直到某一天看到有人给<code>YYModel</code>提了个<a href="https://github.com/ibireme/YYModel/issues/79" target="_blank" rel="external">issue</a>，发现这个问题似乎已经有了一个可能的解法。构造一个与<code>Model Class</code>同名的<code>protocol</code>让<code>NSArray</code> conform，这时通过<code>runtime</code>就可以取到这个<code>protocol name</code>，作为<code>Model Class</code>的name构造一个<code>type transformer</code>。这个feature JSONModel应该支持了一段时间，目前<a href="https://github.com/ibireme/YYModel/releases/tag/1.0.4" target="_blank" rel="external">YY已经集成</a>，<code>Mantle</code>何时支持，拭目以待！</p>
+<h2 id="KVC里的小天地"><a href="#KVC里的小天地" class="headerlink" title="KVC里的小天地"></a><font color="#5F9EA0">KVC里的小天地</font></h2><p>解析完成后会调用KVC去setValue。KVC会对基础类型会做<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/KeyValueCoding/Articles/DataTypes.html#//apple_ref/doc/uid/20002171-BAJEAIEE" target="_blank" rel="external">自动wrapping和unwrapping</a>，省了很多事，但有个特性也需要注意。就是<code>- (void)setValue:(nullable id)value forKey:(NSString *)key</code>当key是基础类型而value是NSNull时会调用<code>- (void)setNilValueForKey:(NSString *)key</code>, 默认这个会崩溃，但Mantle并没有给你处理这种情况…所以需要我们在给基类给一个默认实现。</p>
+<h2 id="type-transformer是什么"><a href="#type-transformer是什么" class="headerlink" title="type transformer是什么"></a><font color="#5F9EA0">type transformer是什么</font></h2><p>从上面我们可以看到系统已经为NSURL添加了默认的transformer,即<code>NSURLJSONTransformer</code>，默认会对非空字符串调用<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/NSValueTransformer%2BMTLPredefinedTransformerAdditions.m#L41" target="_blank" rel="external">直接调用<code>[NSURL URLWithString:str]</code>构造字符串</a>。有个问题是在字符串长度为0的情况下，这个函数还是会返回内容为空的URL对象。很多业务逻辑如果没有考虑到这一点是要犯错误的。对于UIColor，NSDate这类对象，如果整个应用的格式是统一的，按理我们也可以加上自己的这类transformer，这个顺理成章毋庸置疑。</p>
+<h2 id="巧用type-transformer"><a href="#巧用type-transformer" class="headerlink" title="巧用type transformer"></a><font color="#5F9EA0">巧用type transformer</font></h2><p>结合<code>type transformer</code>其实我们还可以做一些更巧妙的事情。有一些类似ID的主键，服务器因为存储的是整形，出于方便和效率方面的考虑，服务端会直接返回一个整形的数据。但客户端在使用类型一直会把这个类型当做字符串使用，很多情况下就不免加上stringValue来转换类型或者加上显示的keyTransformer去显示转化。这时其实可以考虑加上一个NSStringJSONTransformer,转化可能的NSNumber为string，可谓一劳永逸。但这有个问题是，这个Model在转化为JSON时会丢失掉它原始的类型，但回传的需求，在应用中使用的太少，基本就忽略。</p>
+<h1 id="Validate"><a href="#Validate" class="headerlink" title="Validate"></a><font color="#4590a3">Validate</font></h1><p>validate从性质上也可以分为两类，一类为校验JSON数据是否返回了约定的格式，另一类校验返回的数据是否业务场景。</p>
+<h2 id="数据格式的校验（Mantle世界的麦田守望者"><a href="#数据格式的校验（Mantle世界的麦田守望者" class="headerlink" title="数据格式的校验（Mantle世界的麦田守望者)"></a><font color="#5F9EA0">数据格式的校验（Mantle世界的麦田守望者)</font></h2><p>校验数据格式的工作基本有上文提到的<code>validate transformer</code>提供，这个<code>transformer</code>位置重要，堪比麦田守望者。它会校验此时的<code>json object</code>是否是符合声明的类型，不是则及时报错。如果没有这个<code>transformer</code>，试想我们预期是<code>NSString</code>而拿到一个<code>NSNumber</code>会发生什么！数据格式错误往往是服务器出现了什么重大错误，或者http请求被恶意劫持，比较难以根治和解决，有了这个检验至少可以显著降低客户端的崩溃率。</p>
+<h2 id="业务逻辑的校验（后端不哭-）"><a href="#业务逻辑的校验（后端不哭-）" class="headerlink" title="业务逻辑的校验（后端不哭..）"></a><font color="#5F9EA0">业务逻辑的校验（后端不哭..）</font></h2><p>业务逻辑的校验需要我们自己实现，返回的数据此时虽已确保类型无误。但我们还是不能确保它就是符合业务规范的，比如说关键的主键却为空，或者关联属性出现互相矛盾的结果。这时我们就需要我们根据业务需求去实现validate。理论上当然是逻辑越严密越好，但这时会导致代码异常繁琐，现实中一般做的并不多。因为这类错误，基本是服务端程序员的逻辑错误，所以只要他们能即使改正，客户端是可保无虞。</p>
+<h3 id="巧妙解决非空的判断"><a href="#巧妙解决非空的判断" class="headerlink" title="巧妙解决非空的判断"></a><font color="#35c0a3">巧妙解决非空的判断</font></h3><p>结合上面的NSArray的处理，其实我们也可以实现一个简单的Not NULL的实现，声明一个<code>NotNUll</code>的protocol，非空<code>NSString</code>，<code>NSNumber</code>属性conform一下。然后通过<code>runtime</code>去validate相关属性，是不是感觉清晰了不少…</p>
+<h1 id="一些实践"><a href="#一些实践" class="headerlink" title="一些实践"></a><font color="#4590a3">一些实践</font></h1><h2 id="写好keypath"><a href="#写好keypath" class="headerlink" title="写好keypath"></a><font color="#5F9EA0">写好keypath</font></h2><p>keypath推荐结合用<a href="https://github.com/jspahrsummers/libextobjc/tree/master/extobjc" target="_blank" rel="external">extobjc</a>结合code snippets，编译时检查，值得拥有。</p>
+<h2 id="加入默认值"><a href="#加入默认值" class="headerlink" title="加入默认值"></a><font color="#5F9EA0">加入默认值</font></h2><p>有些时候，默认值是非空或0，可以在MTModel的基类里面的<code>- (instancetype)initWithDictionary:(NSDictionary *)dictionary error:(NSError **)error {</code>里面加入一些默认值的处理。</p>
+<p>算了，打住，不写了。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在公司使用&lt;code&gt;Mantle&lt;/code&gt;也差不多有一年，其间有痛有笑，难一一道明。使用期间总算积累了一些经验，在此献丑，或能有益于人；由于是一些知识点的汇总，难免拉杂干涩，写的断断续续，行文并不流畅。所有索引都随文给出，不另外附录；建议核心部分，结合代码理解。另如有
+    
+    </summary>
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/categories/iOS/"/>
+    
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/tags/iOS/"/>
+    
+      <category term="Mantle" scheme="http://mobilists.eleme.io/tags/Mantle/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ReactiveCocoa实践</title>
+    <link href="http://mobilists.eleme.io/2016/04/12/ReactiveCocoa%E5%AE%9E%E8%B7%B5/"/>
+    <id>http://mobilists.eleme.io/2016/04/12/ReactiveCocoa实践/</id>
+    <published>2016-04-12T03:57:32.000Z</published>
+    <updated>2017-02-07T09:21:46.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>ReactiveCocoa(以下简称RAC)是iOS上函数响应式编程（Functional Reactive Programming，FRP）的框架，这个和我们平时面向对象（OOP）的编程方式有挺大的区别。本文通过在项目中使用RAC来实现一个小功能，让大家了解一下RAC。</p>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>有一个需求，在搜索页搜索时，需要先判断输入内容是否合法（2个字符以上），同时需要500毫秒的延迟，减少用户输入过程中频繁发起请求。这个功能非常适合用RAC来实现。FRP的核心是信号（signal），而输入框文本变化实质是一种信号，我们可以通过对信号的处理来完成这个功能。</p>
+<h1 id="Signal"><a href="#Signal" class="headerlink" title="Signal"></a>Signal</h1><p>RAC中最核心的类RACSignal，是一系列可以被监测的数据流。</p>
+<ul>
+<li>信号类(RACSignal)，只是表示当数据改变时，信号内部会发出数据.</li>
+<li>默认一个信号都是冷信号，也就是值改变了，也不会触发，只有订阅了这个信号，这个信号才会变为热信号，值改变了才会触发。</li>
+<li>如何订阅信号：调用信号RACSignal的subscribeNext就能订阅。</li>
+</ul>
+<p>一个简单例子:</p>
+<figure class="highlight objectivec"><figcaption><span>RACSignal</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">RACSignal *signal = [RACSignal createSignal:^RACDisposable *(<span class="keyword">id</span>&lt;RACSubscriber&gt; subscriber) &#123;</div><div class="line">  <span class="comment">// block调用时刻：每当有订阅者订阅信号，就会调用block。</span></div><div class="line">  <span class="comment">// 发送信号</span></div><div class="line">  [subscriber sendNext:@<span class="number">1</span>];</div><div class="line">  <span class="comment">// 发送完成信号</span></div><div class="line">  [subscriber sendCompleted];</div><div class="line">  <span class="keyword">return</span> <span class="literal">nil</span>;</div><div class="line">&#125;];</div><div class="line"></div><div class="line"><span class="comment">// 订阅信号,才会激活信号.</span></div><div class="line">[signal subscribeNext:^(<span class="keyword">id</span> x) &#123;</div><div class="line">  <span class="comment">// block调用时刻：每当有信号发出数据，就会调用block.</span></div><div class="line">  <span class="built_in">NSLog</span>(<span class="string">@"接收到数据:%@"</span>,x);</div><div class="line">&#125;];</div></pre></td></tr></table></figure>
+<p>同时也支持使用宏来快速地生成信号</p>
+<figure class="highlight objectivec"><figcaption><span>KVO</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">[RACObserve(<span class="keyword">self</span>, searchText) subscribeNext:^(<span class="built_in">NSString</span> *text) &#123;</div><div class="line">  <span class="built_in">NSLog</span>(<span class="string">@"%@"</span>, text);</div><div class="line">&#125;];</div></pre></td></tr></table></figure>
+<p><code>RACObserve</code>通过<code>- (RACSignal *)rac_valuesForKeyPath: observer:</code>来生成了一个信号，<br>其使用了KVO来监听property的变化，只要searchText被自己或外部改变，block就会被执行。只要是支持KVO的property都可以被RACObserve来生成一个信号。</p>
+<h2 id="Operators"><a href="#Operators" class="headerlink" title="Operators"></a>Operators</h2><p>信号的处理是非常方便的，可以被修改(map)，也可以被过滤（filter），还可以被节流(throttle,一段时间内不在发送新的信号)等等。</p>
+<figure class="highlight objectivec"><figcaption><span>Operators</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">[[[RACObserve(<span class="keyword">self</span>, searchText)</div><div class="line">   filter:^<span class="built_in">BOOL</span>(<span class="built_in">NSString</span> *text) &#123;</div><div class="line">     <span class="keyword">return</span> text.length &gt; <span class="number">2</span>;</div><div class="line">   &#125;]</div><div class="line">  throttle:<span class="number">0.5</span>]</div><div class="line"> subscribeNext:^(<span class="built_in">NSString</span> *searchText) &#123;</div><div class="line">   [<span class="keyword">self</span> search:searchText];</div><div class="line"> &#125;];</div></pre></td></tr></table></figure>
+<p>以上的代码通过对原始信号的处理（filter,throttle），生成了一下新的信号，过滤了输入字符长度小于等于2，同时在一定500毫秒内，不接收任何信号内容，过了500毫秒才获取最后发送的信号内容发出。</p>
+<h1 id="Implementation"><a href="#Implementation" class="headerlink" title="Implementation"></a>Implementation</h1><p>当然由于block的循环引用，我们必须像往常一样使用weakSelf，strongSelf。RAC在RACEXTScope.h中定义了 <code>@weakify()</code> 和 <code>@strongify()</code> 来方便我们使用。<code>@weakify()</code>实际上定义了一个_weak的<code>self_weak_</code> 变量，而<code>@strongify()</code>则在block定义了一个指向<code>self_weak_</code>的_strong的self指针。最终代码：</p>
+<figure class="highlight objectivec"><figcaption><span>Final Code</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">@weakify(<span class="keyword">self</span>);</div><div class="line">[[[RACObserve(<span class="keyword">self</span>, searchText)</div><div class="line">   filter:^<span class="built_in">BOOL</span>(<span class="built_in">NSString</span> *text) &#123;</div><div class="line">     <span class="keyword">return</span> text.length &gt; <span class="number">2</span>;</div><div class="line">   &#125;]</div><div class="line">  throttle:<span class="number">0.5</span>]</div><div class="line"> subscribeNext:^(<span class="built_in">NSString</span> *searchText) &#123;</div><div class="line">   @strongify(<span class="keyword">self</span>);</div><div class="line">   [<span class="keyword">self</span> search:searchText];</div><div class="line"> &#125;]</div></pre></td></tr></table></figure>
+<hr>
+<p>Written by 饿了么iOS组 － <a href="https://github.com/zhungxd" target="_blank" rel="external">zhungxd</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;ReactiveCocoa(以下简称RAC)是iOS上函数响应式编程（Functional Reactive Programming，FRP）的框架，这个和我们平时面向对象（OOP）的编程方式有挺大的区别。本文通过在项目中使用RAC来实现一个小功能，让大家了解一下RAC。&lt;
+    
+    </summary>
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/categories/iOS/"/>
+    
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/tags/iOS/"/>
+    
+      <category term="ReactiveCocoa" scheme="http://mobilists.eleme.io/tags/ReactiveCocoa/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>饿了么Android插件化开发实践（一）</title>
+    <link href="http://mobilists.eleme.io/2016/03/28/%E9%A5%BF%E4%BA%86%E4%B9%88%E6%8F%92%E4%BB%B6%E5%8C%96%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%EF%BC%88%E4%B8%80%EF%BC%89/"/>
+    <id>http://mobilists.eleme.io/2016/03/28/饿了么插件化开发实践（一）/</id>
+    <published>2016-03-28T09:18:09.000Z</published>
+    <updated>2017-02-07T09:21:46.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="痛点"><a href="#痛点" class="headerlink" title="痛点"></a>痛点</h2><p>随着饿了么APP业务急速的发展，项目组内部各个模块的业务越来越多，同时其他项目组也有在主APP集成的需求，现行的Single Code Repo越来越不适合项目的推进。</p>
+<h4 id="团队内部需求"><a href="#团队内部需求" class="headerlink" title="团队内部需求"></a>团队内部需求</h4><p>目前饿了么APP是基于业务分成Shopping、Booking、Order、Account、Marketing和Application六个模块，每个模块由相关的开发人员进行负责。APP方法数早就超过了65k，最新发布的5.9.0版本方法数已经到达了85k。</p>
+<pre><code>1、业务量比较复杂，六个模块一共占去了30k
+
+2、为了避免开发中出现大量的boilerplate code，写了很多工具，在compile time 
+   auto generate code
+
+3、业务之外，项目中也依赖了很多团队各位小伙伴写的给力库，比如图片解析、HotFix、ORM
+
+4、同时团队对开源也比较活跃，使用了一些很赞的library，如retrofit、RxJava、OkHttp
+
+5、再加上庞大的Android Support Library
+</code></pre><p>方法数越来越大，codebase也越来越庞大。快速的发版周期，codebase只会越来越庞大，这时来自团队内部推动模块化开发的声音逐渐起来。</p>
+<pre><code>1、不管是开发new feature，还是对代码的重构，引入bug的风险也越来越大
+
+2、虽然基于业务分包，代码逻辑还算比较清晰，但是各个模块的耦合也越来越重
+
+3、在同一repo下开发，一个模块的重构很可能会影响到其他模块，导致小伙伴对refactor code
+   比较谨慎，不利于个人能力的发挥，也不利于项目的发展，这当然不是我们愿意看到的
+</code></pre><h4 id="公司内部需求"><a href="#公司内部需求" class="headerlink" title="公司内部需求"></a>公司内部需求</h4><p>使用过饿了么APP的同学都知道，饿了么首页有很多运营位，这些运营位有一些是被其他事业部占去的，比如早餐。这些坑位的产品同学也希望他们的页面如丝滑般流畅，对用户体验比较有要求，他们不满足于H5，也不满足于react-native。这种情况下，只能上native code了，但是不同项目组之间有着不同的研发周期，使得我们一起维护一个codebase的想法不大现实。</p>
+<h2 id="Plugin-Dev-规划"><a href="#Plugin-Dev-规划" class="headerlink" title="Plugin Dev 规划"></a>Plugin Dev 规划</h2><p>针对插件化开发的规划，定义了几点需求。</p>
+<pre><code>1、基于模块进行拆分，把一个不易维护的大APP变成多个精简的小APP
+
+2、满足公司内部的需求，为其他团队提供插件支持，最好可以直接把一个独立的APK load起来
+
+3、可随意加载、卸载插件APP
+
+4、插件APP可免升级更新
+
+5、满足不同的研发周期，可降级展示插件APP，如 H5/native随意切换显示
+
+6、隔离插件的crash
+
+7、安全性校验，防止插件被劫持
+</code></pre><h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>面对上面的业务场景，我们就理所当然的走上了插件化的不归路了。所幸2015年国内Android圈迎来了一波开源小高潮，有一些比较成熟的案例和library可供参考，我们饿了么在这条路上不是一个人在奋斗。业务达到一定量级瓶颈，codebase越来越难以维护的场景下，插件化开发是目前比较靠谱的一条路，很多的同学都已经在这路上走了很远，比如携程、360。</p>
+<p>来自wequick的<a href="https://github.com/wequick/Small" target="_blank" rel="external">Small</a>、还有CtripMobile的<a href="https://github.com/CtripMobile/DynamicAPK" target="_blank" rel="external">DynamicAPK</a>都是通过在同一进程中加载，重心放在在资源的冲突解决上；而来自Qihoo360的<a href="https://github.com/Qihoo360/DroidPlugin" target="_blank" rel="external">DroidPlugin</a>的实现则独树一帜，为了避免处理复杂的资源问题，直接一个Plugin对应一个独立的process，构建了一个沙箱，一个运行环境。</p>
+<p>基于不同的实现方式，大致可以把插件化开发的方向分成两个</p>
+<pre><code>1、Host &amp; Plugin in a single process
+
+2、create another process when load a plugin
+</code></pre><p>这是一个开篇文章，后面会针对这两种不同的实现方式分别做详细的分析和解读。有兴趣的同学可以在评论区留言</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;痛点&quot;&gt;&lt;a href=&quot;#痛点&quot; class=&quot;headerlink&quot; title=&quot;痛点&quot;&gt;&lt;/a&gt;痛点&lt;/h2&gt;&lt;p&gt;随着饿了么APP业务急速的发展，项目组内部各个模块的业务越来越多，同时其他项目组也有在主APP集成的需求，现行的Single Code Re
+    
+    </summary>
+    
+      <category term="Android" scheme="http://mobilists.eleme.io/categories/Android/"/>
+    
+    
+      <category term="Android" scheme="http://mobilists.eleme.io/tags/Android/"/>
+    
+      <category term="Plugin" scheme="http://mobilists.eleme.io/tags/Plugin/"/>
+    
+      <category term="插件化" scheme="http://mobilists.eleme.io/tags/%E6%8F%92%E4%BB%B6%E5%8C%96/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>用UIKit Dynamics模仿UIScrollView</title>
+    <link href="http://mobilists.eleme.io/2016/03/15/%E7%94%A8UIKit-Dynamics%E6%A8%A1%E4%BB%BFUIScrollView/"/>
+    <id>http://mobilists.eleme.io/2016/03/15/用UIKit-Dynamics模仿UIScrollView/</id>
+    <published>2016-03-15T10:46:06.000Z</published>
+    <updated>2017-02-07T09:21:46.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>饿了么在上个版本的时候对餐厅页做了很大的改动, 无论是视觉上还是交互上都有很不错的效果. 为了实现这种效果, 我们自己用UIPanGestureRecognizer和UIKit Dynamics模拟了系统的UIScrollView, 包括惯性滚动, 弹性, 橡皮筋(RubberBanding)效果.<br><img src="/2016/03/15/用UIKit-Dynamics模仿UIScrollView/UXRecord.gif" alt="效果" title="效果"></p>
+<p>在刚接到这个任务的时候, 有过几种想法:</p>
+<ol>
+<li>这个效果很像是UITableView加上Header的Parallel效果</li>
+<li>可以在一个UIScrollView上面嵌套一个UITableView作为子视图</li>
+</ol>
+<p>这些方案都被否决了. 第一种方案, 因为当前页面不仅有两个TableView(食物类别和菜单), 而且要支持左右滚动在”商品”, “评价”, “详情”三个页面切换. 用TableView的header做视差效果是不太可能做到的. 对第二种方案, 是在<code>-[UIScrollViewDelegate scrollViewDidScroll:]</code>中再手动修改其中一个ScrollView的<code>contentOffset</code>, 使得当前的两个scrollView的<code>contentOffset</code>都是正确的, 但是难点是很难去指定手指在屏幕上滑动的时候, 是父view还是子view的UIPanGestureRecognizer手势被响应. 而考虑先禁用其中的一个手势(比如子view的), 先让父View的手势可以驱动父View的<code>contentOffset</code>改变, 直到父view的<code>contentOffset</code>到了某个位置再启用子view的手势, 禁用父view的. 这带来一个问题, 在切换手势的enable的时候, 即使手指没有离开屏幕, 但是手势已经禁用, 导致滚动中断, 除非手指离开屏幕后重新触摸才能再次滚动, 这样的效果比较不流畅, 并且其中的逻辑比较复杂, 不太容易处理. 或者子类UIScrollView和UITableView, 在手势代理<code>gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer</code> 返回YES, 使得两个ScrollView可以同时滚动, 然后在<code>scrollViewDidScroll:</code>中还原其中一个ScrollView的contentOffset. 但是这样导致逻辑变得复杂, 因为视图中的手势太多. 把ScrollView添加为另一个ScrollView的子视图并不推荐.</p>
+<p>最后, 考虑到这个效果订制程度很高, 于是自己去模仿一下UIScrollView的特性.</p>
+<p>首先说明一下视图的结构:<br><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="variable">&lt;ParentViewController.View&gt;</span></div><div class="line">   |<span class="string"> &lt;Container&gt; //UIView</span></div><div class="line">   |<span class="string">    </span>|<span class="string"> &lt;SegmentView&gt;</span></div><div class="line">   |<span class="string">    </span>|<span class="string"> &lt;ScrollView&gt; //仅左右滑动(pagingEnabled)</span></div><div class="line">   |<span class="string">    </span>|<span class="string">    </span>|<span class="string"> &lt;ChildViewController1.View&gt;</span></div><div class="line">   |<span class="string">    </span>|<span class="string">    </span>|<span class="string">    </span>|<span class="string"> &lt;CategoryListView&gt;</span></div><div class="line">   |<span class="string">    </span>|<span class="string">    </span>|<span class="string">    </span>|<span class="string"> &lt;FoodListView&gt;</span></div><div class="line">   |<span class="string">    </span>|<span class="string">    </span>|<span class="string"> &lt;ChildViewController2.View&gt;</span></div><div class="line">   |<span class="string">    </span>|<span class="string">    </span>|<span class="string">    </span>|<span class="string"> &lt;RatingListView&gt;</span></div><div class="line">   |<span class="string">    </span>|<span class="string">    </span>|<span class="string"> &lt;ChildViewController3.View&gt;</span></div><div class="line">   |<span class="string">    </span>|<span class="string">    </span>|<span class="string">    </span>|<span class="string"> &lt;SummaryListView&gt;</span></div></pre></td></tr></table></figure></p>
+<p>ParentViewController就是从首页Push进入的ViewController, 在它的View上放置了一个Container(一个普通的UIView), Container的上方是SegmentView,下方是一个左右滑动的ScrollView; 在ScrollView上, 从左往右放置了三个ViewController的View; 所有的tableView视图的bounce都禁用. 由于使用了AutoLayout,<br><figure class="highlight objectivec"><figcaption><span>ViewController</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">[Container mas_makeConstraints:^(MASConstraintMaker *make) &#123;</div><div class="line">   make.left.right.bottom.equalTo(ParentViewController.View);     </div><div class="line">   make.top.equalTo(ParentViewController.View).offset(topOffset);</div><div class="line">&#125;];</div></pre></td></tr></table></figure><br>Container的left, right, bottom都对应ParentViewController.View的left,right,bottom, 我们只需要修改topOffset对应的约束, 就可以做出如下的效果:</p>
+<img src="/2016/03/15/用UIKit-Dynamics模仿UIScrollView/UXRecord_TopConstraint.gif" alt="效果" title="效果">
+<p>为了让交互的所有细节都可控, 我们要把FoodListView, RatingListView, SummaryListView的scrollEnabled设置为NO, 也就是将UIScrollView自带的panGestureRecognizer禁用, 然后在Container上加上自己的PanGestureRecognizer. 这样之后只要是和上下滚动相关的交互(tableView的滚动和Container的top的约束)都由自己实现的PanGestureRecognizer完成. 这么做有两点优势, 一是当在上下滑动的时候PanGestureRecognizer一定会触发, 并且在滑动的时候, 可以精确的控制当前手势的位移是修改Container的顶部约束还是修改当前页面的tableView的contentOffset; 二是在手势结束的时候, 可以获取最后手势的速度<code>-[UIPanGestureRecognizer velocityInView:]</code> 这方便了之后模拟惯性效果.</p>
+<p>在模拟ScrollView的三个特性里面, 最简单的是RubberBanding(橡皮筋效果), 惯性滚动和弹性原理是类似的.</p>
+<h1 id="RubberBanding"><a href="#RubberBanding" class="headerlink" title="RubberBanding"></a>RubberBanding</h1><p>因为只启用了自定义的pan手势, 在普通情况下, 要修改tableView的contentOffset 或者修改Container的顶部约束, 只需要在<code>pan.state == UIGestureRecognizerStateChanged</code>, 根据<code>[pan translationInView: Container].y</code>获取垂直方向的手势位移, 修改contentOffset或者约束的变化等于手势位移. 至于RubberBanding, 在垂直方向上有两种可能: Container距离顶部超过某个预设的值, 手势继续向下拖动; 或者tableView的拉到底部之后手势继续向上. 这个时候修改<code>contentOffset</code>或者顶部约束的变化小于手势位移(比如乘以一个小于1的因数), 就可以模仿出RubberBanding效果.</p>
+<h1 id="惯性-amp-弹性"><a href="#惯性-amp-弹性" class="headerlink" title="惯性 &amp; 弹性"></a>惯性 &amp; 弹性</h1><p>这里说的惯性效果不仅包括模仿tableView自身的惯性减速修改<code>contentOffset</code>.<br>还包括:</p>
+<ul>
+<li>在手势结束之后, Container根据惯性的效果动态改变它的顶部约束.</li>
+<li>Container按照惯性效果到顶部后(top约束减小, Container向上移动), 惯性效果没有消失, 继续驱动tableView的<code>contentOffset</code>修改. (速度传递)</li>
+<li>tableView按照惯性减小<code>contentOffset.y</code>到0后, 惯性效果继续驱动Container修改顶部约束. (速度传递)<br>同样, 弹性效果也不只是tableView到达超过底部之后放手回弹, 也包括Container距离顶部超过一定距离之后放手回弹效果, 以及可能因为速度传递后导致的回弹.</li>
+</ul>
+<p>先简单的考虑只在手势结束后发生的惯性和弹性, 很幸运的是可以获取手势最后一刻的速度<code>[pan velocityInView:Container].y</code>. 第一反应是使用UIView的springAnimation, 因为它接受传入速度. 但是其他参数比如duration, 其实没有太好的方案去指定, 如果加上速度传递的效果, 它就更无能为力了. 反复滑动系统的ScrollView, 在调用栈发现它是由CADisplayLink驱动的, 发现它的行为和UIKit Dynamics的动画很符合, 而且UIKit Dynamics背后也是CADisplayLink,加上UIDynamicBehavior有个action属性:</p>
+<p><code>When running, the dynamic animator calls the action block on every animation step.</code></p>
+<p>在每一帧动画的时候都会调用下. 这些组合起来, 足够去模拟ScrollView的各种行为了.</p>
+<p>一般我们使用UIKit Dynamics的时候, 我们是把各种Behaviour直接添加到UIView上, 然后视图就会在它到作用下动起来. 但在现在的情况下, 并不能够直接对视图添加Behaviour. 由于Behaviour实际是对遵循UIDynamicItem协议的对象做物理动画, 所以可以把contentOffset或者顶部约束的值做一层抽象. </p>
+<figure class="highlight objectivec"><figcaption><span>DynamicItem</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">DynamicItem</span> : <span class="title">NSObject</span>&lt;<span class="title">UIDynamicItem</span>&gt;</span></div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readwrite</span>) <span class="built_in">CGPoint</span> center;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) <span class="built_in">CGRect</span> bounds;</div><div class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readwrite</span>) <span class="built_in">CGAffineTransform</span> transform;</div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">DynamicItem</span></span></div><div class="line">- (<span class="keyword">instancetype</span>)init &#123;</div><div class="line">  <span class="keyword">if</span> (<span class="keyword">self</span> = [<span class="keyword">super</span> init]) &#123;</div><div class="line">	_bounds = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>);</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> <span class="keyword">self</span>;</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>DynamicItem的实例可以看作是一个质点, 在垂直方向上, 它的位置(center)可以用来代表Container的位置(top), 也可以用来代表tableView的<code>contentOffset.y</code>, 它的<code>transform</code>属性可以不用考虑. </p>
+<p>无论是修改Container的位置还是tableView的<code>contentOffset</code>, 在惯性或弹性效果的情况下, 只要在action中将约束的值或者<code>contentOffset.y</code>设置为DynamicItem的<code>center.y</code>就可以. UIKit Dynamics自己会在每一帧去修改.</p>
+<p>比如惯性效果下修改Container的顶部约束大概是这样的:</p>
+<figure class="highlight objectivec"><figcaption><span>ViewController</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// when pan.state == UIGestureRecognizerStateEnded</span></div><div class="line">NVMDynamicItem *item = [NVMDynamicItem new];</div><div class="line"><span class="comment">// topOffset表示当前Container距离顶部的距离</span></div><div class="line">item.center = <span class="built_in">CGPointMake</span>(<span class="number">0</span>, topOffset);</div><div class="line"><span class="comment">// velocity是在手势结束的时候获取的竖直方向的手势速度</span></div><div class="line"><span class="built_in">UIDynamicItemBehavior</span> *inertialBehavior = [[<span class="built_in">UIDynamicItemBehavior</span> alloc] initWithItems:@[ item ]];</div><div class="line">  [inertialBehavior addLinearVelocity:<span class="built_in">CGPointMake</span>(<span class="number">0</span>, velocity) forItem:item];</div><div class="line">  <span class="comment">// 通过尝试取2.0比较像系统的效果</span></div><div class="line">  inertialBehavior.resistance = <span class="number">2.0</span>; </div><div class="line">  inertialBehavior.action = ^&#123;</div><div class="line">    <span class="built_in">CGFloat</span> itemTop = item.center.y;</div><div class="line">    [Container mas_updateConstraints:^(MASConstraintMaker *make) &#123;</div><div class="line">      make.top.equalTo(ParentViewController.View).offset(itemTop);</div><div class="line">  &#125;];</div><div class="line">&#125;;</div><div class="line">[<span class="keyword">self</span>.animator addBehavior:inertialBehavior];</div></pre></td></tr></table></figure>
+<p>类似的弹性效果只需使用UIAttachmentBehavior并且设置合适的值, 尝试下来length = 0, damping = 1, frequency = 1.6, 就有不错的回弹效果.<br>修改contentOffset也是类似, 只不过是将在action中修改约束的部分改为修改contentOffset.</p>
+<p>对于速度传递, 完全一样的原理, 唯一的变化就是从获取手势的速度变为获取<code>-[UIDynamicItemBehavior linearVelocityForItem]</code>的线速度, 然后UIDynamicAnimator移除不需要的动画, 按照上面的例子传入速度再次做惯性动画. </p>
+<p>甚至还可以把UIAttachmentBehavior和UIDynamicItemBehavior同时使用, 模仿有初速度的回弹效果.</p>
+<p>大致的思路就是这样, 只需要注意什么时候调用<code>-[UIDynamicAnimator removeBehavior]</code>停止动画(比如手势刚开始的时候), 以及action中注意retain cycle.</p>
+<p>有个2014年的<a href="http://holko.pl/2014/07/06/inertia-bouncing-rubber-banding-uikit-dynamics/" target="_blank" rel="external">博客</a>已经有了类似的例子, 只是交互简单一些, 原理是一样的.</p>
+<p>而在运用自己的手势去实现ScrollView之后, 碰到了一些细节问题.</p>
+<ol>
+<li>自己加到Container上的手势, 很容易误触发tableView的<code>-tableView:didSelectRowAtIndexPath:indexPath</code>协议方法, 导致很容易Push到下一个页面, 很影响使用. 解决的原理比较简单, 在合适的时机将当前的tableView.userInteractionEnabled设置为NO, 之后在需要的时候恢复. 正好UIDynamicAnimatorDelegate提供了动画将要开始<code>dynamicAnimatorWillResume:</code>和暂停(包括移除bahaviour)<code>dynamicAnimatorDidPause:</code>的回调. 就在这两个地方分别设置, 效果还可以接受.</li>
+<li>当tableView在UIKit Dynamics的作用下滚动时, 或者是快速上下滑动的时候, 很容易触发左右滑动的ScrollView切换页面. 解决方案比较tricky: 自定义了UIScrollView的子类, 在子类中将gestureRecognizerShouldBegin:重写, 对于panGestureRecognizer的情况, 在它的水平速度和垂直速度的夹角在一定范围内强制返回NO. 这样就大大减小了误触发左右滚动的操作. 但是还是希望有更好的解决方案.</li>
+<li>还有一个很常见的问题, 点击状态栏, 正常情况下系统能够将ScrollView滚动到顶部, 而在一个Window中有多个ScrollView的时候, 它是不一定成功的. 正确的解决方案应该是将当前页面需要响应系统statusBar点击的ScrollView的<code>scrollsToTop</code>设置为YES, 其他都设置为NO, 并且<code>scrollsToTop</code>为YES的只能有一个, 这种情况下理论上是可以work的. 但是在解决第一个问题的时候, 导致了这种解决方法有时候不成功. 因为发现在一个UIScrollView的<code>userInteractionEnabled == NO</code>的时候, 状态栏点击返回顶部效果是无效的(比如正在惯性滚动的时候, 状态还是NO, 这个时候点击statusBar); 加上在最左边的页面有两个tableView需要同时滚动到顶部. 只能换个解决方案. 子类化了全局的UIWindow, 重写它的<code>-pointInside:withEvent:</code>, 在statusBar区域被点击的时候发出通知, 监听到后手动设置contentOffset到0. </li>
+<li>由于之前很多控件是AutoLayout写的, 比如cell, 因为现在实现的方案会频繁修改约束, 导致滑动很卡(之前在iPhone 6就感受到卡顿了). 之后用手动布局改了一部分cell, 确实流畅了很多.</li>
+</ol>
+<p>虽然UIKit Dynamics平时很少用到, 不过在关键时刻也发挥了巨大的作用, 很好奇Apple在实现UIScrollView会不会也用到了它.</p>
+<hr>
+<p>Written by 饿了么iOS组 － <a href="https://github.com/philcai1993" target="_blank" rel="external">PhilCai</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;饿了么在上个版本的时候对餐厅页做了很大的改动, 无论是视觉上还是交互上都有很不错的效果. 为了实现这种效果, 我们自己用UIPanGestureRecognizer和UIKit Dynamics模拟了系统的UIScrollView, 包括惯性滚动, 弹性, 橡皮筋(Rubb
+    
+    </summary>
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/categories/iOS/"/>
+    
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/tags/iOS/"/>
+    
+      <category term="UIScrollView" scheme="http://mobilists.eleme.io/tags/UIScrollView/"/>
+    
+      <category term="UIKit Dynamics" scheme="http://mobilists.eleme.io/tags/UIKit-Dynamics/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>android APP 瘦身</title>
+    <link href="http://mobilists.eleme.io/2016/02/25/android-APP-%E7%98%A6%E8%BA%AB/"/>
+    <id>http://mobilists.eleme.io/2016/02/25/android-APP-瘦身/</id>
+    <published>2016-02-25T09:18:09.000Z</published>
+    <updated>2017-02-07T09:21:46.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>随着饿了么业务的快速发展，直接面向用户的APP的功能也越来越多，APP的体积也随之增长。虽然我们研发一直在有意识的从代码和资源角度打磨产品，但是仍是不能比较可观的抑制体积的增长，经历整个2015年多个版本的迭代，增长了一倍不止。所以到了这个时候，为了更小的减少用户升级更新的成本，APP瘦身之旅势在必行。下面将根据不同的瘦身角度来实战分析。 </p>
+<h2 id="1、PNG"><a href="#1、PNG" class="headerlink" title="1、PNG"></a>1、PNG</h2><p>  1.切图只要xxhdpi<br>      基于数据分析，绝大多数用户的设备分辨率都是2x、3x，<br>      在切图方面只选取xxhdpi一套图，通过在不同分辨率的机器上测试，UI效果以及内存开销都可以接受</p>
+<p>2.切图技巧<br>      大尺寸的切图，可考虑分切成多个小图片<br>      不需要alpha通道的图片，可以考虑使用jpg<br>      如果minsdk为4.2.1+，可以考虑把png全部换成webp；低版本可以通过第三方webp解码lib使用</p>
+<p>  3.切图压缩<br>      切图统一压缩，以防万一，在release打包的时候，再一次性压缩。<br>      压缩的工具可以选取<a href="https://tinypng.com/" target="_blank" rel="external">TinyPng</a> 、<a href="http://www.imagemagick.org/" target="_blank" rel="external">ImageMagick</a>（可以封装成GUI/command tool/gradle task）</p>
+<p>   4.SVG/Vector Drawable<br>      自Lollipop开始，Android已经支持<a href="http://developer.android.com/intl/zh-cn/reference/android/graphics/drawable/VectorDrawable.html" target="_blank" rel="external">VectorDrawable</a>和<a href="http://developer.android.com/intl/zh-cn/reference/android/graphics/drawable/AnimatedVectorDrawable.html" target="_blank" rel="external">AnimatedVectorDrawable</a>，这个通过xml文本file完成原来切图png的功能，切图的工作基本就被托管了<br>      Lollipop以下，更新你的support library到<a href="http://android-developers.blogspot.com/2016/02/android-support-library-232.html" target="_blank" rel="external">23.2</a>，VectorDrawableCompat已经可以兼容到api7了，AnimatedVectorDrawableCompat兼容到api11</p>
+<p>   5.删除无用资源<br>      通过<strong>lint</strong>发现无用资源删除<br>      android gradle plugin 开启<a href="http://tools.android.com/tech-docs/new-build-system/resource-shrinking" target="_blank" rel="external">shrinkResources</a><br>      …</p>
+<h2 id="2、资源res"><a href="#2、资源res" class="headerlink" title="2、资源res"></a>2、资源res</h2><p>有同学会有疑问，res混淆和APP瘦身有什么关系呢？<br>这就需要大家对Android中资源的查找有一定的了解，code通过R文件中的常量值访问资源，但是是如何映射到具体的资源文件上的呢？这里就需要介绍resources.arsc，简单理解这是一个二进制文件，负责存储res资源的映射关系。如果我们精简资源的路径，如把res/drawable-xxhdpi/hello.png转为 a/z/p.png，这样的话resources.arsc中存储的信息量就会变少，对应的体积就会缩小。<br>    目前这种思路有开源的方案，可参考<a href="https://github.com/shwenzhang/AndResGuard" target="_blank" rel="external">AndResGuard</a></p>
+<h2 id="3、jniLibs"><a href="#3、jniLibs" class="headerlink" title="3、jniLibs"></a>3、jniLibs</h2><p>根据业务面向的用户及设备，可考虑移除mips、x86平台的so</p>
+<p>64位的cpu会兼容32位，可以考虑不保留armeabi-64</p>
+<p>主流的arm架构有armv5、armv7、armv8，而它们是向后兼容的。在计算性能可接受的情况下，只保留armeabi一个；armv7加了FPU，大大提升了浮点运算的效率，必要时也可放入armeabi，在使用的时候手动去基于cpu abi手动load</p>
+<p>应用市场升级安装，我们无法把控具体升级的机器cpu abi。但是如果APP内升级的话，我们可以通过<a href="http://tools.android.com/tech-docs/new-build-system/user-guide/apk-splits" target="_blank" rel="external">ABIs Splits</a>打出多个apk升级包，基于不同的abi分发不同的最新apk</p>
+<p>如果so文件体积比较大的情况下，可不打入apk中，后面通过在线加载后再手动load。一个比较典型的场景就是集成自定义WebView的时候，内核so的体积很大，高达10MB+，这个时候WIFI在线load就是个不错的方案</p>
+<p>优化native code。native code会直接影响so的大小，所以从根源上做努力很有必要，比如Do not use Exceptions and RTTI。具体参考<a href="https://blog.algolia.com/android-ndk-how-to-reduce-libs-size/" target="_blank" rel="external">Link</a></p>
+<h2 id="4、proguard"><a href="#4、proguard" class="headerlink" title="4、proguard"></a>4、proguard</h2><p>不知道大家有没有注意到，打包的code文件中包含很多的信息，其中有个就是 <strong>LineNumber</strong><br>这个有什么作用呢，就是记录code对应的行号，执行过程中没啥意义。但是如果遇到crash，抓取stack trace去分析的时候，就可以具体到哪一行出了问题。<br>如果你足够丧心病狂、足够对code有信心的话，你可以移除<strong>LineNumber</strong>信息。</p>
+<h2 id="5、library"><a href="#5、library" class="headerlink" title="5、library"></a>5、library</h2><p>debug依赖的lib，统一在release时不打进APK，或者依赖的lib提供一套空实现<br>大而全的Llbrary的引入有谨慎，guava这样的库就算了。如果你只用到一小部分功能，可以考虑自己做个抽取，或者替换为一个更精小的lib<br>时刻关注library的依赖关系，别一个小lib直接或间接的依赖着一个超大的<br>在重构过程中，记得check下是否有可以删除的lib      </p>
+<h2 id="6、online-load"><a href="#6、online-load" class="headerlink" title="6、online load"></a>6、online load</h2><p>上面提到过一些，这里详细列举下<br>资源加载：大的图片、db文件、so等<br>code加载：即插件化，在线download jar再load，目前有很多开源项目可参考</p>
+<p>以上所列举的措施很多，在瘦身的过程中，基于自身的业务及需求，考虑选取合适的建议。我们饿了么APP这边的目标就是在满足业务的前提下，力求压缩到极致，同时也实现瘦身自动化。在持续优化的过程中，我们团队内部也逐渐积累了一些工具和lib，我们会在合适的时候给开源出来，有兴趣的同学持续关注。</p>
+<p><strong>希望我们的经验能给有需求的同学一些参考和启发，也欢迎大家积极comment</strong></p>
+<p><strong>APP瘦身是一条持续优化的路，这关乎产品，更关乎情怀</strong></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;随着饿了么业务的快速发展，直接面向用户的APP的功能也越来越多，APP的体积也随之增长。虽然我们研发一直在有意识的从代码和资源角度打磨产品，但是仍是不能比较可观的抑制体积的增长，经历整个2015年多个版本的迭代，增长了一倍不止。所以到了这个时候，为了更小的减少用户升级更新的
+    
+    </summary>
+    
+      <category term="Android" scheme="http://mobilists.eleme.io/categories/Android/"/>
+    
+    
+      <category term="Android" scheme="http://mobilists.eleme.io/tags/Android/"/>
+    
+      <category term="Shrink" scheme="http://mobilists.eleme.io/tags/Shrink/"/>
+    
+      <category term="APP 瘦身" scheme="http://mobilists.eleme.io/tags/APP-%E7%98%A6%E8%BA%AB/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>详解 iOS 8 `UIPresentationController` Custom Presentation</title>
+    <link href="http://mobilists.eleme.io/2016/02/12/%E8%AF%A6%E8%A7%A3-iOS-8-UIPresentationController-custom-presentation/"/>
+    <id>http://mobilists.eleme.io/2016/02/12/详解-iOS-8-UIPresentationController-custom-presentation/</id>
+    <published>2016-02-12T05:28:40.000Z</published>
+    <updated>2017-02-07T09:21:46.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>现在大多数 app 都已经支持 iOS 7+ 有一段时间了，距离支持 iOS 8+ 的时间也是屈指可数（希望如此…）了。iOS 8 新增的 API 中有一个 <code>UIPresentationController</code> 一直比较陌生，本文将简略介绍使用 <code>UIPresentationController</code> 来实现一个自定义 presentation 的过程，然后详细解读 <code>UIKit</code> 是如何操作这一过程以及我们能够如何地参与其中。</p>
+<h1 id="Final-Result"><a href="#Final-Result" class="headerlink" title="Final Result"></a>Final Result</h1><p>下图是 demo 的效果：黄色背景的 view controller （之后简称vc）present 了一个红色背景的 vc，present 的过程是自定义的，红色背景的 vc 被 present 出来后没有占满整个屏幕，周围有一圈黑色半透明背景可以透视看到黄色 vc。<br><img src="/2016/02/12/详解-iOS-8-UIPresentationController-custom-presentation/final_result.gif" alt="最终的结果" title="最终的结果"></p>
+<h1 id="Implementation"><a href="#Implementation" class="headerlink" title="Implementation"></a>Implementation</h1><p>Demo 的效果用 iOS 7 的自定义 presentation 动画的 API 就能够实现，只需要使 presented vc 的背景色是黑色半透明，然后在上面加一个比自己 view 小一圈的红色区域就行。这里我们先不讨论为什么能够用 iOS 7 的 API 实现了，还需要用 iOS 8 的 <code>UIPresentationController</code>，直接先看如何实现。</p>
+<p>我们创建一个 <code>UIPresentationController</code> 的 subclass，在其中自己管理一个 <code>dimmingView</code>（黑色半透明），并 override 一些方法，在 present 的过程中把 presented vc 的 view 的 <code>frame</code> 设置得小一些，并将其加到 <code>dimmingView</code> 上，然后把 <code>dimmingView</code> 加入到视图结构中去。</p>
+<figure class="highlight swift"><figcaption><span>MyPresentationController</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyPresentationController</span>: <span class="title">UIPresentationController</span> </span>&#123;</div><div class="line">  </div><div class="line">  <span class="keyword">let</span> dimmingView = <span class="type">UIView</span>()</div><div class="line">  </div><div class="line">  <span class="keyword">override</span> <span class="keyword">init</span>(presentedViewController: <span class="type">UIViewController</span>, presentingViewController: <span class="type">UIViewController</span>) &#123;</div><div class="line">    dimmingView.backgroundColor = <span class="type">UIColor</span>.blackColor().colorWithAlphaComponent(<span class="number">0.4</span>)</div><div class="line">    </div><div class="line">    <span class="keyword">super</span>.<span class="keyword">init</span>(presentedViewController: presentedViewController, presentingViewController: presentingViewController)</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">frameOfPresentedViewInContainerView</span><span class="params">()</span></span> -&gt; <span class="type">CGRect</span> &#123;</div><div class="line">    <span class="keyword">if</span> <span class="keyword">let</span> frame = containerView?.bounds &#123;</div><div class="line">      <span class="keyword">return</span> <span class="type">CGRectInset</span>(frame, <span class="number">50</span>, <span class="number">50</span>)</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">      <span class="keyword">return</span> <span class="keyword">super</span>.frameOfPresentedViewInContainerView()</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">containerViewWillLayoutSubviews</span><span class="params">()</span></span> &#123;</div><div class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> containerView = containerView <span class="keyword">else</span> &#123; <span class="keyword">return</span> &#125;</div><div class="line">    dimmingView.frame = containerView.bounds</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">presentationTransitionWillBegin</span><span class="params">()</span></span> &#123;</div><div class="line">    <span class="keyword">guard</span></div><div class="line">      <span class="keyword">let</span> containerView = containerView,</div><div class="line">      <span class="keyword">let</span> presentedView = presentedView(),</div><div class="line">      <span class="keyword">let</span> coordinator = presentingViewController.transitionCoordinator()</div><div class="line">      <span class="keyword">else</span> &#123; <span class="keyword">return</span> &#125;</div><div class="line"></div><div class="line">    dimmingView.alpha = <span class="number">0.0</span></div><div class="line">    containerView.addSubview(dimmingView)</div><div class="line">    dimmingView.addSubview(presentedView)</div><div class="line">    coordinator.animateAlongsideTransition(&#123; (context) -&gt; <span class="type">Void</span> <span class="keyword">in</span></div><div class="line">      <span class="keyword">self</span>.dimmingView.alpha = <span class="number">1.0</span></div><div class="line">      &#125;, completion: <span class="literal">nil</span>)</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">presentationTransitionDidEnd</span><span class="params">(completed: Bool)</span></span> &#123;</div><div class="line">    <span class="keyword">if</span> !completed &#123;</div><div class="line">      dimmingView.removeFromSuperview()</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">dismissalTransitionWillBegin</span><span class="params">()</span></span> &#123;</div><div class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> coordinator = presentedViewController.transitionCoordinator() <span class="keyword">else</span> &#123; <span class="keyword">return</span> &#125;</div><div class="line">    coordinator.animateAlongsideTransition(&#123; (context) -&gt; <span class="type">Void</span> <span class="keyword">in</span></div><div class="line">      <span class="keyword">self</span>.dimmingView.alpha = <span class="number">0.0</span></div><div class="line">      &#125;, completion: <span class="literal">nil</span>)</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">dismissalTransitionDidEnd</span><span class="params">(completed: Bool)</span></span> &#123;</div><div class="line">    <span class="keyword">if</span> completed &#123;</div><div class="line">      dimmingView.removeFromSuperview()</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后我们需要一个 animator，涉及的都是 iOS 7 的 API，这里不多做说明。注意 <code>transitionContext.viewForKey(UITransitionContextToViewKey)</code> 是 iOS 8 新增的 API，这里必须这样来取得 <code>toView</code> 是因为 presentation controller 可能会提供并不是 presented vc 的 view 来用做 presentation。另外 <code>toView</code> 的 <code>finalFrame</code> 同样需要从 context 获取，因为 <code>finalFrame</code> 可以被 <code>UIPresentationController</code> 修改为并不是整个屏幕的大小。</p>
+<figure class="highlight swift"><figcaption><span>TransitioningAnimator</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">TransitioningAnimator</span>: <span class="title">NSObject</span>, <span class="title">UIViewControllerAnimatedTransitioning</span> </span>&#123;</div><div class="line">  </div><div class="line">  <span class="function"><span class="keyword">func</span> <span class="title">transitionDuration</span><span class="params">(transitionContext: UIViewControllerContextTransitioning?)</span></span> -&gt; <span class="type">NSTimeInterval</span> &#123;</div><div class="line">    <span class="keyword">return</span> <span class="number">1.0</span></div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="function"><span class="keyword">func</span> <span class="title">animateTransition</span><span class="params">(transitionContext: UIViewControllerContextTransitioning)</span></span> &#123;</div><div class="line">    <span class="keyword">guard</span></div><div class="line">      <span class="keyword">let</span> toViewController = transitionContext.viewControllerForKey(<span class="type">UITransitionContextToViewControllerKey</span>),</div><div class="line">      <span class="keyword">let</span> toView = transitionContext.viewForKey(<span class="type">UITransitionContextToViewKey</span>),</div><div class="line">      <span class="keyword">let</span> containerView = transitionContext.containerView()</div><div class="line">      <span class="keyword">else</span> &#123; <span class="keyword">return</span> &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">let</span> finalFrame = transitionContext.finalFrameForViewController(toViewController)</div><div class="line">    toView.frame = finalFrame</div><div class="line">    toView.transform = <span class="type">CGAffineTransformMakeScale</span>(<span class="number">0.2</span>, <span class="number">0.2</span>)</div><div class="line">    toView.alpha = <span class="number">0.0</span></div><div class="line">    containerView.addSubview(toView)</div><div class="line">    </div><div class="line">    <span class="type">UIView</span>.animateWithDuration(transitionDuration(transitionContext), delay: <span class="number">0</span>, usingSpringWithDamping: <span class="number">0.5</span>, initialSpringVelocity: <span class="number">0</span>, options: [], animations: &#123; <span class="number">_</span> <span class="keyword">in</span></div><div class="line">      toView.transform = <span class="type">CGAffineTransformIdentity</span></div><div class="line">      toView.alpha = <span class="number">1.0</span></div><div class="line">      &#125;) &#123; completed -&gt; <span class="type">Void</span> <span class="keyword">in</span></div><div class="line">        transitionContext.completeTransition(completed)</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>另外还需要一个 <code>TransitioningDelegate</code>，其作用就是提供之前创建的 presentation controller 以及 animator</p>
+<figure class="highlight swift"><figcaption><span>TransitioningDelegate</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">TransitioningDelegate</span>: <span class="title">NSObject</span>, <span class="title">UIViewControllerTransitioningDelegate</span> </span>&#123;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">func</span> <span class="title">presentationControllerForPresentedViewController</span><span class="params">(presented: UIViewController, presentingViewController presenting: UIViewController, sourceViewController source: UIViewController)</span></span> -&gt; <span class="type">UIPresentationController</span>? &#123;</div><div class="line">    <span class="keyword">let</span> presentationController = <span class="type">MyPresentationController</span>(presentedViewController: presented, presentingViewController: presenting)</div><div class="line">    <span class="keyword">return</span> presentationController</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="function"><span class="keyword">func</span> <span class="title">animationControllerForPresentedController</span><span class="params">(presented: UIViewController, presentingController presenting: UIViewController, sourceController source: UIViewController)</span></span> -&gt; <span class="type">UIViewControllerAnimatedTransitioning</span>? &#123;</div><div class="line">    <span class="keyword">let</span> animator = <span class="type">TransitioningAnimator</span>()</div><div class="line">    <span class="keyword">return</span> animator;</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>最后，在 present 之前把 <code>TransitioningDelegate</code> 赋值给 presenting 以及 presented vc。</p>
+<figure class="highlight swift"><figcaption><span>黄色vc的按钮触发的方法内</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> vc = <span class="type">MyViewController</span>()</div><div class="line"><span class="keyword">let</span> myTransitioningDelegate = <span class="type">TransitioningDelegate</span>()</div><div class="line">transitioningDelegate = myTransitioningDelegate</div><div class="line">vc.transitioningDelegate = myTransitioningDelegate</div><div class="line"></div><div class="line">presentViewController(vc, animated: <span class="literal">true</span>, completion: <span class="literal">nil</span>)</div></pre></td></tr></table></figure>
+<p>通过以上的代码就实现了 demo 所示的效果。你肯定会问，我用 iOS 7 的 animator 一样可以做到啊，这是何苦又要多增加一个类（<code>MyPresentationController</code>）呢？下面我们详细撸一遍 iOS 8 下 present 的过程，撸完之后应该就能够理解了。</p>
+<h1 id="UIPresentationController"><a href="#UIPresentationController" class="headerlink" title="UIPresentationController"></a>UIPresentationController</h1><p>为了便于参考，把 <code>UIPresentationController</code> 的 API 放在这里，可以直接跳到下一章阅读。<br><figure class="highlight swift"><figcaption><span>UIPresentationController</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@available</span>(iOS <span class="number">8.0</span>, *)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UIPresentationController</span> : <span class="title">NSObject</span>, <span class="title">UIAppearanceContainer</span>, <span class="title">UITraitEnvironment</span>, <span class="title">UIContentContainer</span>, <span class="title">UIFocusEnvironment</span> </span>&#123;</div><div class="line">    </div><div class="line">    <span class="keyword">public</span> <span class="keyword">var</span> presentingViewController: <span class="type">UIViewController</span> &#123; <span class="keyword">get</span> &#125;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">var</span> presentedViewController: <span class="type">UIViewController</span> &#123; <span class="keyword">get</span> &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">public</span> <span class="keyword">var</span> presentationStyle: <span class="type">UIModalPresentationStyle</span> &#123; <span class="keyword">get</span> &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// The view in which a presentation occurs. It is an ancestor of both the presenting and presented view controller's views.</span></div><div class="line">    <span class="comment">// This view is being passed to the animation controller.</span></div><div class="line">    <span class="keyword">public</span> <span class="keyword">var</span> containerView: <span class="type">UIView</span>? &#123; <span class="keyword">get</span> &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">weak</span> <span class="keyword">public</span> <span class="keyword">var</span> delegate: <span class="type">UIAdaptivePresentationControllerDelegate</span>?</div><div class="line">    </div><div class="line">    <span class="keyword">public</span> <span class="keyword">init</span>(presentedViewController: <span class="type">UIViewController</span>, presentingViewController: <span class="type">UIViewController</span>)</div><div class="line">    </div><div class="line">    <span class="comment">// By default this implementation defers to the delegate, if one exists, or returns the current presentation style. UIFormSheetPresentationController, and</span></div><div class="line">    <span class="comment">// UIPopoverPresentationController override this implementation to return UIModalPresentationStyleFullscreen if the delegate does not provide an</span></div><div class="line">    <span class="comment">// implementation for adaptivePresentationStyleForPresentationController:</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">adaptivePresentationStyle</span><span class="params">()</span></span> -&gt; <span class="type">UIModalPresentationStyle</span></div><div class="line">    <span class="meta">@available</span>(iOS <span class="number">8.3</span>, *)</div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">adaptivePresentationStyleForTraitCollection</span><span class="params">(traitCollection: UITraitCollection)</span></span> -&gt; <span class="type">UIModalPresentationStyle</span></div><div class="line">    </div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">containerViewWillLayoutSubviews</span><span class="params">()</span></span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">containerViewDidLayoutSubviews</span><span class="params">()</span></span></div><div class="line">    </div><div class="line">    <span class="comment">// A view that's going to be animated during the presentation. Must be an ancestor of a presented view controller's view</span></div><div class="line">    <span class="comment">// or a presented view controller's view itself.</span></div><div class="line">    <span class="comment">// (Default: presented view controller's view)</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">presentedView</span><span class="params">()</span></span> -&gt; <span class="type">UIView</span>?</div><div class="line">    </div><div class="line">    <span class="comment">// Position of the presented view in the container view by the end of the presentation transition.</span></div><div class="line">    <span class="comment">// (Default: container view bounds)</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">frameOfPresentedViewInContainerView</span><span class="params">()</span></span> -&gt; <span class="type">CGRect</span></div><div class="line">    </div><div class="line">    <span class="comment">// By default each new presentation is full screen.</span></div><div class="line">    <span class="comment">// This behavior can be overriden with the following method to force a current context presentation.</span></div><div class="line">    <span class="comment">// (Default: YES)</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">shouldPresentInFullscreen</span><span class="params">()</span></span> -&gt; <span class="type">Bool</span></div><div class="line">    </div><div class="line">    <span class="comment">// Indicate whether the view controller's view we are transitioning from will be removed from the window in the end of the</span></div><div class="line">    <span class="comment">// presentation transition</span></div><div class="line">    <span class="comment">// (Default: NO)</span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">shouldRemovePresentersView</span><span class="params">()</span></span> -&gt; <span class="type">Bool</span></div><div class="line">    </div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">presentationTransitionWillBegin</span><span class="params">()</span></span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">presentationTransitionDidEnd</span><span class="params">(completed: Bool)</span></span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">dismissalTransitionWillBegin</span><span class="params">()</span></span></div><div class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">dismissalTransitionDidEnd</span><span class="params">(completed: Bool)</span></span></div><div class="line">    </div><div class="line">    <span class="comment">// Modifies the trait collection for the presentation controller.</span></div><div class="line">    <span class="meta">@NSCopying</span> <span class="keyword">public</span> <span class="keyword">var</span> overrideTraitCollection: <span class="type">UITraitCollection</span>?</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h1 id="The-Presentation-Process"><a href="#The-Presentation-Process" class="headerlink" title="The Presentation Process"></a>The Presentation Process</h1><p>我们来详细解读一下 presentation 的过程：</p>
+<ol>
+<li>我们初始化好将要被 present 的 vc 以及我们的 <code>TransitioningDelegate</code>，并将之赋值给 presenting 及 presented vc，然后通过我们再熟悉不过的 <code>presentViewController:animated:completion:</code> 启动 presentation。</li>
+<li><code>UIKit</code> 通过 <code>presentationControllerForPresentedViewController(_:presentingViewController:sourceViewController:)</code> 来向我们的 <code>TransitioningDelegate</code> 要一个 <code>UIPresentationController</code>，在我们的实现中，我们提供了自己写的它的子类 <code>MyPresentationController</code>。</li>
+<li><code>UIKit</code> 向 <code>UIPresentationController</code> 的 <code>shouldPresentInFullscreen()</code> 咨询这次 presentation 是否覆盖全屏幕。它的默认值就是 <code>true</code>。我们也可以返回 <code>false</code> 从而来一次覆盖部分屏幕的 presentation。<code>UIKit</code> 在整个 presentation 的过程中会多次咨询这个方法。</li>
+<li><code>UIKit</code> 咨询 <code>adaptivePresentationStyleForTraitCollection(traitCollection:)</code> 来获取一个在特定 trait collection 下 make sense 的 presentation style。比如说在横屏的 phone 上以 popover 来 present 了一个 vc，然后切换成竖屏，考虑到竖屏下横向空间是紧凑的话可以把 popover 调整为 fullscreen。这个方法的本质是咨询 <code>UIPresentationController</code> 的 <code>delegate</code> 的 <code>adaptivePresentationStyleForPresentationController:traitCollection:</code> 来得到一个 style，如果 <code>delegate</code> 不存在的话则返回 <code>.None</code>，就是完全不适配不同的 trait collection。</li>
+<li><code>UIKit</code> 向我们的 <code>TransitioningDelegate</code> 通过 <code>animationControllerForPresentedController(_:presentingController:sourceController:)</code> 要一个 animator，这里我们是提供 <code>TransitioningAnimator</code> 来实现自定义的 presentation animation。重申一下在 animator 中我们的 <code>toView</code>, <code>finalFrame</code> 之类的一切属性都要从 context 拿，不能简单地假设 frame 就是整个屏幕或者 <code>toView</code> 就是 presented vc 的 view 之类的。</li>
+<li>我们的 <code>TransitioningDelegate</code> 提供了所有 <code>UIKit</code> 需要的信息，它被释放了。</li>
+<li><code>UIKit</code> 向 <code>UIPresentationController</code> 的 <code>shouldRemovePresentersView()</code> 询问是不是要在 presentation 动画结束后移除掉 presenting 者的 view。我们的 presentation 完成之后是能够透过半透明的视图看到 presenting vc 的，所以应该返回 false（默认就是 false，因此不用重载）。<code>UIKit</code> 在整个 presentation 的过程中会多次咨询这个方法。</li>
+<li><code>UIPresentationController</code> 的 <code>presentationTransitionWillBegin()</code> 被调用。这里我们把自己提供的 <code>dimmingView</code> 拿出来，把 presented vc 的 view 加到 <code>dimmingView</code> 上，然后把 <code>dimmingView</code> 加到 containerView 上，并且用 coordinator 来将 <code>dimmingView</code> 的 <code>alpha</code> 从 0 animate 到 1。我们在这里做的事情和 Apple 文档中写的一模一样：把自定义的 view 加入到视图结构中并且 animate 与之相关的东西。</li>
+<li>在前一步中我们调用了 <code>UIPresentationController</code> 的 <code>presentedView()</code>。它默认返回 presented vc 的 view，我们可以提供一个不同的 view 来被 present，比如把 presented vc 的 view 包在一个 <code>UINavigationController</code> 的 view 内再提供出去。注意这个方法会被 <code>UIKit</code> 调用多次，所以不能在这里进行视图结构的设置，这些应该在第 8 步完成，这里需要迅速返回一个 view。额外扯一下，这是一个微妙的能力，因为国内 iOS 开发者肯定是开发 iPhone app 居多，我们在 present 一个 vc 之前是不是基本上都需要把它包在一个 <code>UINavigationController</code> 内呢？那么在 iOS 8 之后，我们可以指定 present 的 controller 是一个会把 presented vc 包装在 <code>UINavigationController</code> 内的 presentation controller，然后只管 present 就行。从实际看它省不了代码（反而还变多了…），不过从另一方面来看它解耦了代码的逻辑：vc 做的事情已经够多了，包装 presented vc 这样的杂事还是交给一个专门的 controller 来做。。。</li>
+<li>然后我们的 animator 的 <code>transitionDuration(_ transitionContext:)</code> 以及 <code>animateTransition(_ transitionContext:)</code> 被调用，开始进行自定义 presentation 的动画。这里当我们从 context 中取 <code>toViewController</code> 的 <code>finalFrame</code> 时，实际是从 <code>UIPresentationController</code> 的 <code>frameOfPresentedViewInContainerView()</code> 中拿的，<code>frameOfPresentedViewInContainerView()</code> 默认返回 container view 的大小，而在我们的实现中需要 presented vc 的 view 比整个屏幕小一圈，所以我们返回一个自己算的 frame。<code>UIKit</code> 会调用 <code>frameOfPresentedViewInContainerView()</code> 多次，所以这里的计算不能太复杂。这里有个微妙的地方是：这里的 frame 是 presented view 在 container view 中的 frame，而我们实际是把 presented view 加在了自己的 <code>dimmingView</code> 上的，因此这里要注意一致性。我们的 animator 提供的自定义动画会和之前 <code>UIPresentationController</code> 中 <code>presentationTransitionWillBegin()</code> 里 coordinator 设置的动画同时进行。</li>
+<li>在动画真正跑起来之前，<code>containerViewWillLayoutSubviews()</code> 以及 <code>containerViewDidLayoutSubviews()</code> 会被调用，这里 Apple 的说法是在 <code>containerViewWillLayoutSubviews()</code> 里调整自定义 view 的位置（我们的 <code>dimmingView</code>的位置就是在这里设置的），在 <code>containerViewDidLayoutSubviews()</code> 里对视图结构再作额外的调整。</li>
+<li>经过我们在 animator 里设置好的时间，animator 的动画跑完了，其 completion handler 被调用。</li>
+<li><code>presentationTransitionDidEnd(completed:)</code> 被调用，这里如果是未完成的话（比如是 interactive 的 presentation，人为取消了）我们需要把 <code>dimmingView</code> 移除掉，毕竟是自己加上去的。</li>
+<li>至此整个 presentation 就算完成了，<code>presentViewController:animated:completion:</code> 的 completion 会被调用。</li>
+<li>有趣的是，之前通过 coordinator 设置好的动画的 completion 是最后被调用的。</li>
+</ol>
+<p>以上就是 presentation 过程 <code>UIPresentationController</code> 在 <code>UIKit</code> 中是如何工作的详解，知道了这些，我们在使用 <code>UIPresentationController</code> 进行自定义 presentation 的过程中就能最大限度地与之配合好好工作了。</p>
+<p>有 present 就要有 dismiss，dismiss 的过程与之是类似的，这里不再描述。</p>
+<p><code>UIPresentationController</code> 还能通过其 <code>delegate</code> 配合设备的 trait collection 的变化进行 adaptive 的调整。</p>
+<p>看到这里是不是额头上已经冒汗了？搞这么麻烦究竟是为什么啊？</p>
+<h1 id="Why"><a href="#Why" class="headerlink" title="Why?"></a>Why?</h1><p>我对 <code>UIPresentationController</code> 的理解是逻辑的解耦。通过 <code>UIPresentationController</code>，被 present 的 vc 可以不必知道自己还需要提供一个半透明的视图能透过去看到 presenting vc，它只需要提供自己的 view 出来；而 presenting vc 也不必亲自对 presented vc 的 view 进行额外处理（比如将其 embed 到 <code>UINavigationController</code>），它只需要调用 present 就行，present 相关的逻辑都由 <code>UIPresentationController</code> 来处理；animator 纯粹就是用来 animate presentation 的过程，它不需要知道任何造成耦合的假设，任何信息都从 context 中直接拿；present 完成后，整个 presentation 的环境可以是 adaptive 的（通过 <code>UIAdaptivePresentationControllerDelegate</code>），并且这个 adaptive 的能力是由 presentation controller 提供的，被 present 的 vc 只要管好自己的 view 就行。</p>
+<p>经过以上的分析，是不是能够理解 Apple 这样调整的理由了呢？</p>
+<hr>
+<p>Written by 饿了么iOS组 － <a href="https://github.com/axl411" target="_blank" rel="external">axl411</a></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;现在大多数 app 都已经支持 iOS 7+ 有一段时间了，距离支持 iOS 8+ 的时间也是屈指可数（希望如此…）了。iOS 8 新增的 API 中有一个 &lt;code&gt;UIPresentationController&lt;/code&gt; 一直比较陌生，本文将简略介绍使用 &lt;co
+    
+    </summary>
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/categories/iOS/"/>
+    
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/tags/iOS/"/>
+    
+      <category term="UIPresentationController" scheme="http://mobilists.eleme.io/tags/UIPresentationController/"/>
+    
+      <category term="Custom Presentation" scheme="http://mobilists.eleme.io/tags/Custom-Presentation/"/>
+    
+      <category term="iOS 8" scheme="http://mobilists.eleme.io/tags/iOS-8/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>突破微信跳转限制－Universal Links那些坑</title>
+    <link href="http://mobilists.eleme.io/2016/01/10/%E7%AA%81%E7%A0%B4%E5%BE%AE%E4%BF%A1%E8%B7%B3%E8%BD%AC%E9%99%90%E5%88%B6%EF%BC%8DUniversal-Links%E9%82%A3%E4%BA%9B%E5%9D%91/"/>
+    <id>http://mobilists.eleme.io/2016/01/10/突破微信跳转限制－Universal-Links那些坑/</id>
+    <published>2016-01-10T13:43:29.000Z</published>
+    <updated>2017-02-07T09:21:46.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>微信屏蔽了在其内部webview中大部分URL Scheme跳转（除了一个白名单比如点评），目前突破这个限制有两种方案</p>
+<ul>
+<li>WXAppExtendObject: 这个用法自查</li>
+<li>Universal Links: 文档在<a href="https://developer.apple.com/library/ios/documentation/General/Conceptual/AppSearch/UniversalLinks.html" target="_blank" rel="external">这里</a> ，工作原理，如何实现，直接参考官方文档即可</li>
+</ul>
+<p>但是我们按照文档支持了Universal Links，却在iOS9.2开始发现不work了，那么下面开始尝试解决问题</p>
+<h2 id="App-Search-API-Validation-Tool"><a href="#App-Search-API-Validation-Tool" class="headerlink" title="App Search API Validation Tool"></a>App Search API Validation Tool</h2><hr>
+<p>apple官方有出一个工具－<a href="https://search.developer.apple.com/appsearch-validation-tool/" target="_blank" rel="external">App Search API Validation Tool</a>，这个工具可以测试网站对iOS9 search API的支持，其中包括了对Universal Links的配置检查</p>
+<p>但是这个工具对我们网站检查的结果是 <code>passed</code></p>
+<h2 id="iOS端表现分析"><a href="#iOS端表现分析" class="headerlink" title="iOS端表现分析"></a>iOS端表现分析</h2><hr>
+<p>iOS 9.2开始具体变现如下：</p>
+<ul>
+<li>Safari中点击符合条件的Link，没有跳转App，但是长按链接能弹出用饿了么打开链接的选项</li>
+<li>信息app内点击指定Link，works</li>
+<li>微信中打开对应的web，点击符合条件的Link，没有跳转App</li>
+</ul>
+<p>看起来iOS 9.2肯定是有修改相关的机制，但是Apple并没有提供相应的修改说明（反正我们没有搜到），这个也符合apple一贯的作风</p>
+<h2 id="答案"><a href="#答案" class="headerlink" title="答案"></a>答案</h2><p>感谢 <a href="https://dev.branch.io" target="_blank" rel="external">Branch Metrics</a>，我在<a href="https://dev.branch.io/recipes/branch_universal_links/ios/#which-appsbrowsers-support-universal-links" target="_blank" rel="external">这里</a>找到了答案</p>
+<p>贴上所有的注意点</p>
+<ul>
+<li>Universal Links will not work if you paste the link into the browser URL field.</li>
+<li>Universal Links work with a user driven <code>&lt;a href=&quot;...&quot;&gt;</code> element click across domains. Example: if there is a Universal Link on google.com pointing to bnc.lt, it will open the app.</li>
+<li>Universal Links will not work with a user driven <code>&lt;a href=&quot;...&quot;&gt;</code> element click on the same domain. Example: if there is a Universal Link on google.com pointing to a different Universal Link on google.com, it will not open the app.</li>
+<li>Universal Links cannot be triggered via Javascript (in window.onload or via a .click() call on an <code>&lt;a&gt;</code> element), unless it is part of a user action.</li>
+</ul>
+<p>也就是从iOS 9.2开始，在相同的domain内Universal Links是不work的，必须要跨域才生效，我们实测值需要跨子域名即可，比如 m.domain.com 跳转 o.domain.com 是可以触发跳转App</p>
+<p>Written by 饿了么iOS组 － Bryan</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;微信屏蔽了在其内部webview中大部分URL Scheme跳转（除了一个白名单比如点评），目前突破这个限制有两种方案&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;WXAppExtendObject: 这个用法自查&lt;/li&gt;
+&lt;li&gt;Universal Links: 文档在&lt;a href=&quot;
+    
+    </summary>
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/categories/iOS/"/>
+    
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/tags/iOS/"/>
+    
+      <category term="Universal Links" scheme="http://mobilists.eleme.io/tags/Universal-Links/"/>
+    
+      <category term="Wechat" scheme="http://mobilists.eleme.io/tags/Wechat/"/>
+    
+  </entry>
+  
+</feed>

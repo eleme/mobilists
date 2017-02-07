@@ -1,0 +1,351 @@
+
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+  <title>Amigo 源码解读 - Eleme Mobilists</title>
+
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="/css/eleme-theme.css">
+    
+  
+</head>
+<body>
+
+<div id="wrapper">
+    <div id="eleme-menu-outer">
+        <a href="/"><img src="/img/eleme-logo.png"></a>
+        <div id="menu-inner">
+            
+            <a href="/">主页</a>
+            
+            <a href="/archives">归档</a>
+            
+            <a href="/about">关于</a>
+            
+        </div>
+    </div>
+
+    <div id="eleme-content-outer">
+        <div id="content-inner">
+            <article id="post">
+    <h1 class="post-title">Amigo 源码解读</h1>
+    <p class="post-meta">
+        
+        <span class="release">发表于
+            <time datetime="2016-09-01T09:18:09.000Z">
+            2016-09-01
+            </time>
+        </span>
+        
+        
+        <span>&nbsp;分类: <a href="/categories/Android/">Android</a></span>
+        
+        
+        <span class="author">&nbsp;authored by <a target="_blank" href="https://github.com/canaan">canaan</a></span>
+        
+    </p>
+    <div class="post-wrapper">
+        <h1 id="Amigo-源码解读"><a href="#Amigo-源码解读" class="headerlink" title="Amigo 源码解读"></a>Amigo 源码解读</h1><p>现在 hotfix 框架有很多，原理大同小异，基本上是基于<a href="https://mp.weixin.qq.com/s?__biz=MzI1MTA1MzM2Nw==&amp;mid=400118620&amp;idx=1&amp;sn=b4fdd5055731290eef12ad0d17f39d4a" target="_blank" rel="external">qq空间这篇文章</a> 或者<a href="http://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&amp;mid=2649286306&amp;idx=1&amp;sn=d6b2865e033a99de60b2d4314c6e0a25&amp;scene=1&amp;srcid=0811AOttpqUnh1Wu5PYcXbnZ#rd" target="_blank" rel="external">微信的方案</a>。可惜的是微信的 Tinker 以及 QZone 都没有将其具体实现开源出来，只是在文章中分析了现有各个 hotfix 框架的优缺点以及他们的实现方案。Amigo 原理与 Tinker 基本相同，但是在 Tinker 的基础上，进一步实现了 so 文件、资源文件、Activity、BroadcastReceiver 的修复，几乎可以号称全面修复，不愧 Amigo（朋友）这个称号，能在危急时刻送来全面的帮助。</p>
+<p>首先我们先来看看如何使用这个库。<br>库地址：<a href="https://github.com/eleme/Amigo" target="_blank" rel="external">https://github.com/eleme/Amigo</a></p>
+<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><p>   在project 的<code>build.gradle</code> 中</p>
+   <figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">dependencies &#123;</div><div class="line">  classpath <span class="string">'me.ele:amigo:0.0.3'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>   在module 的<code>build.gradle</code> 中</p>
+   <figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">apply <span class="string">plugin:</span> <span class="string">'me.ele.amigo'</span></div></pre></td></tr></table></figure>
+<p>   就这样轻松的集成了Amigo。</p>
+<h3 id="生效补丁包"><a href="#生效补丁包" class="headerlink" title="生效补丁包"></a>生效补丁包</h3><p>   补丁包生效有两种方式可以选择：</p>
+<ul>
+<li><p>稍后生效补丁包</p>
+<p>  如果不想立即生效而是用户第二次打开App 时才打入补丁包，则可以将新的Apk 放到 <code>/data/data/{your pkg}/files/amigo/demo.apk</code>，第二次打开时就会自动生效。可以通过这个方法</p>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">File hotfixApk = Amigo.getHotfixApk(context);</div></pre></td></tr></table></figure>
+<p>  获取到新的Apk。<br>  同时，你也可以使用Amigo 提供的工具类将你的补丁包拷贝到指定的目录当中。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">FileUtils</span><span class="selector-class">.copyFile</span>(<span class="selector-tag">yourApkFile</span>, <span class="selector-tag">amigoApkFile</span>);</div></pre></td></tr></table></figure>
+</li>
+<li><p>立即生效补丁包</p>
+<p>  如果想要补丁包立即生效，调用以下两个方法之一，App 会立即重启，并且打入补丁包。</p>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Amigo.work(context);</div></pre></td></tr></table></figure>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Amigo.work(context, apkFile);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="删除补丁包"><a href="#删除补丁包" class="headerlink" title="删除补丁包"></a>删除补丁包</h3><p>如果需要删除掉已经下好的补丁包，可以通过这个方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Amigo.clear(context);</div></pre></td></tr></table></figure>
+<p><strong>提示</strong>：如果apk 发生了变化，Amigo 会自动清除之前的apk。</p>
+<h3 id="自定义界面"><a href="#自定义界面" class="headerlink" title="自定义界面"></a>自定义界面</h3><p>在热修复的过程中会有一些耗时的操作，这些操作会在一个新的进程中的Activity 中执行，所以你可以通过以下方式来自定义这个Activity。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;meta-data</div><div class="line">  android:name=<span class="string">"amigo_layout"</span></div><div class="line">  android:value=<span class="string">"&#123;your-layout-name&#125;"</span> /&gt;</div><div class="line"></div><div class="line">&lt;meta-data</div><div class="line">  android:name=<span class="string">"amigo_theme"</span></div><div class="line">  android:value=<span class="string">"&#123;your-theme-name&#125;"</span> /&gt;</div></pre></td></tr></table></figure>
+<h3 id="组件修复"><a href="#组件修复" class="headerlink" title="组件修复"></a>组件修复</h3><p>Amigo 目前能够支持修复Activity 和BroadcastReceiver。只需要将新的Activity 和BroadcastReceiver 加到新的Apk 包中就可以了。Service 和ContentProvider 将会在未来的版本中支持更新。</p>
+<p>集成 Amigo 十分简单，但是明白 Amigo 的实现更加重要。</p>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>在<code>Amigo</code>这个类中实现了主要的修复工作。我们一起追追看，到底是怎样的实现。</p>
+<h3 id="检查补丁包"><a href="#检查补丁包" class="headerlink" title="检查补丁包"></a>检查补丁包</h3><p><strong>Amigo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line"></div><div class="line"><span class="keyword">if</span> (demoAPk.exists() &amp;&amp; isSignatureRight(<span class="keyword">this</span>, demoAPk)) &#123;</div><div class="line">	 SharedPreferences sp = getSharedPreferences(SP_NAME, MODE_MULTI_PROCESS);</div><div class="line">	 String demoApkChecksum = checksum(demoAPk);</div><div class="line">	 <span class="keyword">boolean</span> isFirstRun = !sp.getString(NEW_APK_SIG, <span class="string">""</span>).equals(demoApkChecksum);</div><div class="line">...</div></pre></td></tr></table></figure>
+<p>这段代码中，首先检查是否有补丁包，并且签名正确，如果正确，则通过检验校验和是否与之前的检验和相同，不同则为检测到新的补丁包。</p>
+<h3 id="释放Apk"><a href="#释放Apk" class="headerlink" title="释放Apk"></a>释放Apk</h3><p>当这是新的补丁包时，首先第一件事就是释放。<code>ApkReleaser.work(this, layoutId, themeId)</code>在这个方法中最终会去开启一个 ApkReleaseActivity，而这个 Activity 的layout 和 theme 就是之前从配置中解析出来，在 work 方法中传进来的layoutId 和 themeId。</p>
+<p><strong>ApkReleaseActivity.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">   <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">	...</div><div class="line"></div><div class="line">   <span class="keyword">new</span> Thread() &#123;</div><div class="line">       <span class="meta">@Override</span></div><div class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">           <span class="keyword">super</span>.run();</div><div class="line"></div><div class="line">           DexReleaser.releaseDexes(demoAPk.getAbsolutePath(), dexDir.getAbsolutePath());</div><div class="line">           NativeLibraryHelperCompat.copyNativeBinaries(demoAPk, nativeLibraryDir);</div><div class="line">           dexOptimization();</div><div class="line"></div><div class="line">           handler.sendEmptyMessage(WHAT_DEX_OPT_DONE);</div><div class="line">       &#125;</div><div class="line">   &#125;.start();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在 ApkReleaseActivity 的 <code>onCreate()</code> 方法中会开启一个线程去进行一系列的释放操作，这些操作十分耗时，目前在不同的机子上测试，从几秒到二十几秒之间不等，如果就这样黑屏在用户前面未免太不优雅，所以 Amigo 开启了一个新的进程，启动这个 Activity。<br>在这个线程中，做了三件微小的事情：</p>
+<ul>
+<li>释放 Dex 到指定目录</li>
+<li><p>拷贝 so 文件到 Amigo 的指定目录下<br>拷贝 so 文件是通过反射去调用 <code>NativeLibraryHelper</code>这个类的<code>nativeCopyNativeBinaries()</code>方法，但这个方法在不同版本上有不同的实现。</p>
+<pre><code>* 如果版本号在21以下
+
+    **NativeLibraryHelper**
+
+  <figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinariesIfNeededLI(<span class="built_in">File</span> apkFile, <span class="built_in">File</span> sharedLibraryDir) &#123;</div><div class="line">       final <span class="keyword">String</span> cpuAbi = Build.CPU_ABI;</div><div class="line">       final <span class="keyword">String</span> cpuAbi2 = Build.CPU_ABI2;</div><div class="line">       <span class="built_in">return</span> nativeCopyNativeBinaries(apkFile.getPath(), sharedLibraryDir.getPath(), cpuAbi,</div><div class="line">               cpuAbi2);</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+</code></pre></li>
+</ul>
+<pre><code>      会去反射调用这个方法，其中系统会自动判断出 primaryAbi 和 secondAbi。
+
+* 如果版本号在21以上
+`copyNativeBinariesIfNeededLI(file, file)`这个方法已经被废弃了，需要去反射调用这个方法
+
+    **NativeLibraryHelper**
+
+    <figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinaries(Handle handle, <span class="built_in">File</span> sharedLibraryDir, <span class="keyword">String</span> abi) &#123;</div><div class="line">       <span class="built_in">for</span> (<span class="keyword">long</span> apkHandle : handle.apkHandles) &#123;</div><div class="line">           <span class="keyword">int</span> res = nativeCopyNativeBinaries(apkHandle, sharedLibraryDir.getPath(), abi,</div><div class="line">                   handle.extractNativeLibs, HAS_NATIVE_BRIDGE);</div><div class="line">           <span class="built_in">if</span> (res != INSTALL_SUCCEEDED) &#123;</div><div class="line">               <span class="built_in">return</span> res;</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">       <span class="built_in">return</span> INSTALL_SUCCEEDED;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+
+
+    所以首先得去获得一个`NativeLibraryHelper$Handle`类的实例。之后就是找 primaryAbi。Amigo 先对机器的位数做了判断，如果是64位的机子，就只找64位的 abi，如果是32位的，就只找32位的 abi。然后将 Handle 实例当做参数去调用`NativeLibraryHelper`的`findSupportedAbi`来获得primaryAbi。最后再去调用`copyNativeBinaries`去拷贝 so 文件。
+
+对于 so 文件加载的原理可以参考[这篇文章](http://mp.weixin.qq.com/s?__biz=MzA3NTYzODYzMg==&amp;mid=2653577702&amp;idx=1&amp;sn=1288c77cd8fc2db68dc92cf18d675ace&amp;scene=4#wechat_redirect)
+</code></pre><ul>
+<li><p>优化 dex 文件</p>
+<p>  <strong>ApkReleaseActivity.java</strong></p>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">dexOptimization</span><span class="params">()</span> </span>&#123;</div><div class="line">	...</div><div class="line">       <span class="keyword">for</span> (File dex : validDexes) &#123;</div><div class="line">           <span class="keyword">new</span> DexClassLoader(dex.getAbsolutePath(), optimizedDir.getAbsolutePath(), <span class="keyword">null</span>, DexUtils.getPathClassLoader());</div><div class="line">           Log.e(TAG, <span class="string">"dexOptimization finished--&gt;"</span> + dex);</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<pre><code>DexClassLoader 没有做什么事情，只是调用了父类构造器，他的父类是 BaseDexClassLoader。在 BaseDexClassLoader 的构造器中又去构造了一个DexPathList 对象。
+在`DexPathList`类中，有一个 Element 数组
+
+**DexPathList**
+
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">/** list <span class="keyword">of</span> dex/resource (<span class="class"><span class="keyword">class</span> <span class="title">path</span>) <span class="title">elements</span> */</span></div><div class="line"><span class="keyword">private</span> final Element[] dexElements;</div></pre></td></tr></table></figure>
+
+Element 就是对 Dex 的封装。所以一个 Element 对应一个 Dex。这个 Element 在后文中会提到。
+</code></pre><p>  优化 dex 只需要在构造 DexClassLoader 对象的时候将 dex 的路径传进去，系统会在最后会通过<code>DexFile</code>的</p>
+<p>  <strong>DexFile.java</strong></p>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">native</span> <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">openDexFile</span><span class="params">(String sourceName, String outputName,</span></span></div><div class="line">      <span class="keyword">int</span> flags) <span class="keyword">throws</span> IOException;</div></pre></td></tr></table></figure>
+<p>   来这个方法来加载 dex，加载的同时会对其做优化处理。</p>
+<p>这三项操作完成之后，通知优化完毕，之后就关闭这个进程，将补丁包的校验和保存下来。这样第一步释放 Apk 就完成了。之后就是重头戏替换修复。</p>
+<h3 id="替换修复"><a href="#替换修复" class="headerlink" title="替换修复"></a>替换修复</h3><h4 id="替换classLoader"><a href="#替换classLoader" class="headerlink" title="替换classLoader"></a>替换classLoader</h4><p>Amigo 先行构造一个<code>AmigoClassLoader</code>对象，这个<code>AmigoClassLoader</code>是一个继承于<code>PathClassLoader</code>的类，把补丁包的 Apk 路径作为参数来构造<code>AmigoClassLoader</code>对象，之后通过反射替换掉 LoadedApk 的 ClassLoader。这一步是 Amigo 的关键所在。</p>
+<h4 id="替换Dex"><a href="#替换Dex" class="headerlink" title="替换Dex"></a>替换Dex</h4><p>之前提到，每个 dex 文件对应于一个<code>PathClassLoader</code>，其中有一个 Element[]，Element 是对于 dex 的封装。</p>
+<p><strong>Amigo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setDexElements</span><span class="params">(ClassLoader classLoader)</span> <span class="keyword">throws</span> NoSuchFieldException, IllegalAccessException </span>&#123;</div><div class="line">   Object dexPathList = getPathList(classLoader);</div><div class="line">   File[] listFiles = dexDir.listFiles();</div><div class="line"></div><div class="line">   List&lt;File&gt; validDexes = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">   <span class="keyword">for</span> (File listFile : listFiles) &#123;</div><div class="line">       <span class="keyword">if</span> (listFile.getName().endsWith(<span class="string">".dex"</span>)) &#123;</div><div class="line">           validDexes.add(listFile);</div><div class="line">       &#125;</div><div class="line">   &#125;</div><div class="line">   File[] dexes = validDexes.toArray(<span class="keyword">new</span> File[validDexes.size()]);</div><div class="line">   Object originDexElements = readField(dexPathList, <span class="string">"dexElements"</span>);</div><div class="line">   Class&lt;?&gt; localClass = originDexElements.getClass().getComponentType();</div><div class="line">   <span class="keyword">int</span> length = dexes.length;</div><div class="line">   Object dexElements = Array.newInstance(localClass, length);</div><div class="line">   <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; length; k++) &#123;</div><div class="line">       Array.set(dexElements, k, getElementWithDex(dexes[k], optimizedDir));</div><div class="line">   &#125;</div><div class="line">   writeField(dexPathList, <span class="string">"dexElements"</span>, dexElements);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在替换dex时，Amigo 将补丁包中每个 dex 对应的 Element 对象拿出来，之后组成新的 Element[]，通过反射，将现有的 Element[] 数组替换掉。<br>在 QZone 的实现方案中，他们是通过将新的 dex 插到 Element[] 数组的第一个位置，这样就会先加载新的 dex ，微信的方案是下发一个 DiffDex，然后在运行时与旧的 dex 合成一个新的 dex。但是 Amigo 是下发一个完整的 dex直接替换掉了原来的 dex。与其他的方案相比，Amigo 因为直接替换原来的 dex ,兼容性更好，能够支持修复的方面也更多。但是这也导致了 Amigo 的补丁包会较大，当然，也可以发一个利用 BsDiff 生成的差分包，在本地合成新的 apk 之后再放到 Amigo 的指定目录下。</p>
+<h4 id="替换动态链接库"><a href="#替换动态链接库" class="headerlink" title="替换动态链接库"></a>替换动态链接库</h4><p><strong>Amigo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setNativeLibraryDirectories</span><span class="params">(AmigoClassLoader hackClassLoader)</span></span></div><div class="line">            <span class="keyword">throws</span> InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, NoSuchFieldException &#123;</div><div class="line">   injectSoAtFirst(hackClassLoader, nativeLibraryDir.getAbsolutePath());</div><div class="line">   nativeLibraryDir.setReadOnly();</div><div class="line">   File[] libs = nativeLibraryDir.listFiles();</div><div class="line">   <span class="keyword">if</span> (libs != <span class="keyword">null</span> &amp;&amp; libs.length &gt; <span class="number">0</span>) &#123;</div><div class="line">       <span class="keyword">for</span> (File lib : libs) &#123;</div><div class="line">           lib.setReadOnly();</div><div class="line">       &#125;</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>so 文件的替换跟 QZone 替换 dex 原理相差不多，也是利用 ClassLoader 加载 library 的时候，将新的 library 加到数组前面，保证先加载的是新的 library。但是这里会有几个小坑。</p>
+<p><strong>DexUtils.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">injectSoAtFirst</span><span class="params">(ClassLoader hackClassLoader, String soPath)</span> <span class="keyword">throws</span> NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException </span>&#123;</div><div class="line">        Object[] baseDexElements = getNativeLibraryDirectories(hackClassLoader);</div><div class="line">        Object newElement;</div><div class="line">        <span class="keyword">if</span> (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.M) &#123;</div><div class="line">            Constructor constructor = baseDexElements[<span class="number">0</span>].getClass().getConstructors()[<span class="number">0</span>];</div><div class="line">            constructor.setAccessible(<span class="keyword">true</span>);</div><div class="line">            Class&lt;?&gt;[] parameterTypes = constructor.getParameterTypes();</div><div class="line">            Object[] args = <span class="keyword">new</span> Object[parameterTypes.length];</div><div class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; parameterTypes.length; i++) &#123;</div><div class="line">                <span class="keyword">if</span> (parameterTypes[i] == File.class) &#123;</div><div class="line">                    args[i] = <span class="keyword">new</span> File(soPath);</div><div class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (parameterTypes[i] == <span class="keyword">boolean</span>.class) &#123;</div><div class="line">                    args[i] = <span class="keyword">true</span>;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            newElement = constructor.newInstance(args);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            newElement = <span class="keyword">new</span> File(soPath);</div><div class="line">        &#125;</div><div class="line">        Object newDexElements = Array.newInstance(baseDexElements[<span class="number">0</span>].getClass(), <span class="number">1</span>);</div><div class="line">        Array.set(newDexElements, <span class="number">0</span>, newElement);</div><div class="line">        Object allDexElements = combineArray(newDexElements, baseDexElements);</div><div class="line">        Object pathList = getPathList(hackClassLoader);</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.M) &#123;</div><div class="line">            writeField(pathList, <span class="string">"nativeLibraryPathElements"</span>, allDexElements);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            writeField(pathList, <span class="string">"nativeLibraryDirectories"</span>, allDexElements);</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>注入 so 文件到数组时，会发现在不同的版本上封装 so 文件的是不同的类，在版本23以下，是File</p>
+<p><strong>DexPathList.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/** list of native library directory elements */</span></div><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> File[] nativeLibraryDirectories;</div></pre></td></tr></table></figure>
+<p>在23以上却是改成了Element</p>
+<p><strong>DexPathList.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/** List of native library path elements. */</span></div><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> Element[] nativeLibraryPathElements;</div></pre></td></tr></table></figure>
+<p>因此在23以上，Amigo 通过反射去构造一个 Element 对象。之后就是将 so 文件插到数组的第一个位置就行了。<br>第二个小坑是nativeLibraryDir要设置成readOnly。</p>
+<p><strong>DexPathList.java</strong></p>
+<figure class="highlight gauss"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">public <span class="keyword">String</span> findNativeLibrary(<span class="keyword">String</span> name) &#123;</div><div class="line">	  maybeInit();</div><div class="line">	  <span class="keyword">if</span> (isDirectory) &#123;</div><div class="line">	      <span class="keyword">String</span> path = <span class="keyword">new</span> File(dir, name).<span class="built_in">getPath</span>();</div><div class="line">	      <span class="keyword">if</span> (IoUtils.canOpenReadOnly(path)) &#123;</div><div class="line">	          <span class="keyword">return</span> path;</div><div class="line">	      &#125;</div><div class="line">	  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (zipFile != <span class="built_in">null</span>) &#123;</div><div class="line">	      <span class="keyword">String</span> entryName = <span class="keyword">new</span> File(dir, name).<span class="built_in">getPath</span>();</div><div class="line">	      <span class="keyword">if</span> (isZipEntryExistsAndStored(zipFile, entryName)) &#123;</div><div class="line">	        <span class="keyword">return</span> zip.<span class="built_in">getPath</span>() + zipSeparator + entryName;</div><div class="line">	      &#125;</div><div class="line">	  &#125;</div><div class="line">	  <span class="keyword">return</span> <span class="built_in">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在ClassLoader 去寻找本地库的时候，如果 so 文件没有设置成ReadOnly的话是会不会返回路径的，这样就会报错了。</p>
+<h4 id="替换资源文件"><a href="#替换资源文件" class="headerlink" title="替换资源文件"></a>替换资源文件</h4><p><strong>Amigo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line">AssetManager assetManager = AssetManager.class.newInstance();</div><div class="line">Method addAssetPath = getDeclaredMethod(AssetManager.class, <span class="string">"addAssetPath"</span>, String.class);</div><div class="line">addAssetPath.setAccessible(<span class="keyword">true</span>);</div><div class="line">addAssetPath.invoke(assetManager, demoAPk.getAbsolutePath());</div><div class="line">setAPKResources(assetManager)</div><div class="line">...</div></pre></td></tr></table></figure>
+<p>想要更新资源文件，只需要更新<code>Resource</code>中的 AssetManager 字段。<code>AssetManager</code>提供了一个方法<code>addAssetPath</code>。将新的资源文件路径加到<code>AssetManager</code>中就可以了。在不同的 configuration 下，会对应不同的 Resource 对象，所以通过 ResourceManager 拿到所有的 configuration 对应的 resource 然后替换其 assetManager。</p>
+<h4 id="替换原有-Application"><a href="#替换原有-Application" class="headerlink" title="替换原有 Application"></a>替换原有 Application</h4><p><strong>Amigo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line">Class acd = classLoader.loadClass(<span class="string">"me.ele.amigo.acd"</span>);</div><div class="line">String applicationName = (String) readStaticField(acd, <span class="string">"n"</span>);</div><div class="line">Application application = (Application) classLoader.loadClass(applicationName).newInstance();</div><div class="line">Method attach = getDeclaredMethod(Application.class, <span class="string">"attach"</span>, Context.class);</div><div class="line">attach.setAccessible(<span class="keyword">true</span>);</div><div class="line">attach.invoke(application, getBaseContext());</div><div class="line">setAPKApplication(application);</div><div class="line">application.onCreate();</div><div class="line">...</div></pre></td></tr></table></figure>
+<p>在编译过程中，Amigo 的插件将 app 的 application 替换成了 Amigo，并且将原来的 application 的 name 保存在了一个名为<code>acd</code>的类中，该修复的都修复完了是时候将原来的 application 替换回来了。拿到原有 Application 名字之后先调用 application 的<code>attach(context)</code>，然后将 application 设回到 loadedApk 中，最后调用<code>oncreate()</code>，执行原有 Application 中的逻辑。<br>这之后，一个修复完的 app 就出现在用户面前。优秀的库~</p>
+<h3 id="Amigo-插件"><a href="#Amigo-插件" class="headerlink" title="Amigo 插件"></a>Amigo 插件</h3><p>前文提到 Amigo 在编译期利用插件替换了 app 原有的 application，那这一个操作是怎么实现的呢？</p>
+<p><strong>AmigoPlugin.groovy</strong></p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">File manifestFile = output.processManifest.manifestOutputFile</div><div class="line">                        <span class="keyword">def</span> manifest = <span class="keyword">new</span> XmlParser().parse(manifestFile)</div><div class="line">                        <span class="keyword">def</span> androidTag = <span class="keyword">new</span> Namespace(<span class="string">"http://schemas.android.com/apk/res/android"</span>, <span class="string">'android'</span>)</div><div class="line">                        applicationName = manifest.application[<span class="number">0</span>].attribute(androidTag.name)</div><div class="line">                        manifestFile.text = manifestFile.text.replace(applicationName, <span class="string">"me.ele.amigo.Amigo"</span>)</div></pre></td></tr></table></figure>
+<p>首先，Amigo Plugin 将 AndroidManifest.xml 文件中的applicationName 替换成 Amigo。</p>
+<p><strong>AmigoPlugin.groovy</strong></p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">Node node = (<span class="keyword">new</span> XmlParser()).parse(manifestFile)</div><div class="line">Node appNode = <span class="literal">null</span></div><div class="line"><span class="keyword">for</span> (Node <span class="string">n :</span> node.children()) &#123;</div><div class="line">   <span class="keyword">if</span> (n.name().equals(<span class="string">"application"</span>)) &#123;</div><div class="line">       appNode = n;</div><div class="line">       <span class="keyword">break</span></div><div class="line">   &#125;</div><div class="line">&#125;</div><div class="line">Node hackAppNode = <span class="keyword">new</span> Node(appNode, <span class="string">"activity"</span>)</div><div class="line">hackAppNode.attributes().put(<span class="string">"android:name"</span>, applicationName)</div><div class="line">manifestFile.text = XmlUtil.serialize(node)</div></pre></td></tr></table></figure>
+<p>之后，Amigo Plugin 做了很 hack 的一步，就是在 AndroidManifest.xml 中将原来的 application 做为一个 Activity 。我们知道 MultiDex 分包的规则中，一定会将 Activity 放到主 dex 中，Amigo Plugin 为了保证原来的 application 被替换后仍然在主 dex 中，就做了这个十分 hack 的一步。机智的少年。</p>
+<p>接下来会再去判断是否开启了混淆，如果有混淆的话，查找 mapping 文件，将 applicationName 字段换成混淆后的名字。</p>
+<p>下一步会去执行 GenerateCodeTask，在这个 task 中会生成一个 Java 文件，这个文件就是上文提到过得<code>acd.java</code>，并且将模板中的 appName 替换成applicationName。<br>然后执行 javaCompile task，编译 Java 代码。<br>最后还要做一件事，就是修改 maindexlist.txt。被定义在这个文件中的类会被加到主 dex 中，所以 Amigo plugin 在<code>collectMultiDexInfo</code>方法中扫描加到主 dex 的类，然后再在扫描的结果中加上 acd.class，把这些内容全部加到 maindexlist.txt。到此Amigo plugin 的任务就完成了。<br>Amigo plugin 的主要目的是在编译期用 amigo 替换掉原来的 application，但是还得保存下来这个 application，因为之后还得在运行时将这个 application 替换回来。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Amigo 几乎实现了全方位的修复，通过替换 ClassLoader，直接全量替换 dex 的思路，保证了兼容性，成功率，但是可能下发的补丁包会比较大。还有一点 Amigo 的精彩之处就是利用 Amigo 替换了 app 原有的 application，这一点保证了 Amigo 连 application 都能修复。以后可能唯一不能修复的就是 Amigo 自身了。</p>
+<p>最后我们比较下目前几个 hotfix 方案：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Amigo</th>
+<th>Tinker</th>
+<th>nuwa/QZone</th>
+<th>AndFix</th>
+<th>Dexposed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>类替换</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr>
+<td>lib替换</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr>
+<td>资源替换</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr>
+<td>全平台支持</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+<tr>
+<td>即时生效</td>
+<td>optional</td>
+<td>no</td>
+<td>no</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>性能损耗</td>
+<td>无</td>
+<td>较小</td>
+<td>较大</td>
+<td>较小</td>
+<td>较小</td>
+</tr>
+<tr>
+<td>补丁包大小</td>
+<td>较大</td>
+<td>较小</td>
+<td>较大</td>
+<td>一般</td>
+<td>一般</td>
+</tr>
+<tr>
+<td>开发透明</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr>
+<td>复杂度</td>
+<td>无</td>
+<td>较低</td>
+<td>较低</td>
+<td>复杂</td>
+<td>复杂</td>
+</tr>
+<tr>
+<td>gradle支持</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>no</td>
+<td>no</td>
+</tr>
+<tr>
+<td>接口文档</td>
+<td>丰富</td>
+<td>丰富</td>
+<td>一般</td>
+<td>一般</td>
+<td>较少</td>
+</tr>
+<tr>
+<td>占Rom体积</td>
+<td>较大</td>
+<td>较大</td>
+<td>较小</td>
+<td>较小</td>
+<td>较小</td>
+</tr>
+<tr>
+<td>成功率</td>
+<td>100%</td>
+<td>较好</td>
+<td>很高</td>
+<td>一般</td>
+<td>一般</td>
+</tr>
+</tbody>
+</table>
+
+    </div>
+    
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'elememobileblog';
+        var disqus_identifier = '2016/09/01/Amigo 源码解读/';
+        var disqus_title = 'Amigo 源码解读';
+        var disqus_url = 'http://mobilists.eleme.io/2016/09/01/Amigo 源码解读/';
+
+        function run_disqus_script(disqus_script){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }
+
+        run_disqus_script('count.js');
+        
+        run_disqus_script('embed.js');
+        
+    </script>
+
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+    
+</article>
+
+
+<nav id="pagination">
+  <div class="pagination-number">
+      
+  </div>
+ <div class="pagination-indicator">
+     
+     <a href="/2017/01/11/使用链式调用解决多可选参数接口设计问题/" class="prev-post">< 使用链式调用解决多可选参数接口设计问题</a>
+     
+
+     
+     <a href="/2016/08/26/terminator/" class="next-post">Amigo---Android hotfix terminator ></a>
+     
+ </div>
+</nav>
+
+
+        </div>
+    </div>
+
+    <div id="eleme-bottom-outer">
+        <div id="bottom-inner">
+            <p class="eleme-copyright">&copy; copyright 2016 by Eleme Mobilists</p>
+            <p class="eleme-theme-copyright">eleme-mobile hexo theme by <a target="_blank" href="https://github.com/stephenwzl">stephenw</a></p>
+            <br>
+        </div>
+    </div>
+    
+    
+    <script src="/js/eleme-theme.js"></script>
+    
+    
+</div>
+
+</body>
+</html>

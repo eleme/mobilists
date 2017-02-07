@@ -1,0 +1,150 @@
+
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+  <title>Amigo---Android hotfix terminator - Eleme Mobilists</title>
+
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="/css/eleme-theme.css">
+    
+  
+</head>
+<body>
+
+<div id="wrapper">
+    <div id="eleme-menu-outer">
+        <a href="/"><img src="/img/eleme-logo.png"></a>
+        <div id="menu-inner">
+            
+            <a href="/">主页</a>
+            
+            <a href="/archives">归档</a>
+            
+            <a href="/about">关于</a>
+            
+        </div>
+    </div>
+
+    <div id="eleme-content-outer">
+        <div id="content-inner">
+            <article id="post">
+    <h1 class="post-title">Amigo---Android hotfix terminator</h1>
+    <p class="post-meta">
+        
+        <span class="release">发表于
+            <time datetime="2016-08-26T04:00:00.000Z">
+            2016-08-26
+            </time>
+        </span>
+        
+        
+        <span>&nbsp;分类: <a href="/categories/Android/">Android</a></span>
+        
+        
+        <span class="author">&nbsp;authored by <a target="_blank" href="https://github.com/JackCho">JackCho</a></span>
+        
+    </p>
+    <div class="post-wrapper">
+        <h2 id="Amigo"><a href="#Amigo" class="headerlink" title="Amigo"></a>Amigo</h2><p><img src="http://amigotheband.com/wp-content/uploads/2015/02/logo_amigo-yellow.png" alt="amigo.png">  </p>
+<p>An old Chinese saying goes: <strong>Road to Jane</strong></p>
+<p>古人有云：<strong>大道至简</strong></p>
+<p>so…</p>
+<h3 id="RTFC"><a href="#RTFC" class="headerlink" title="RTFC"></a>RTFC</h3><p><a href="https://github.com/eleme/amigo" target="_blank" rel="external">Amigo</a> has opened source code in github, so everyone has access to it;</p>
+<p>and we use <strong>Apache License v2.0</strong> as amigo’s license, so everyone can use &amp; modify it.</p>
+<h3 id="usage"><a href="#usage" class="headerlink" title="usage"></a>usage</h3><figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">classpath <span class="string">'me.ele:amigo:0.0.3'</span></div><div class="line">...</div><div class="line"></div><div class="line">apply <span class="string">plugin:</span> <span class="string">'me.ele.amigo'</span></div><div class="line">...</div></pre></td></tr></table></figure>
+<p>you are good to go now, as simple as this.</p>
+<h3 id="if-you-don’t-need-hotfix-work-immediately"><a href="#if-you-don’t-need-hotfix-work-immediately" class="headerlink" title="if you don’t need hotfix work immediately"></a>if you don’t need hotfix work immediately</h3><p>you just need to download new apk file to /data/data/{your pkg}/files/amigo/demo.apk,<br>when app restarts next time, hotfix apk will be loaded as fresh as new.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">File hotfixApk = Amigo.getHotfixApk(context);</div></pre></td></tr></table></figure>
+<h3 id="work-immediately-app-will-restart-immediately"><a href="#work-immediately-app-will-restart-immediately" class="headerlink" title="work immediately, app will restart immediately"></a>work immediately, app will restart immediately</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Amigo.work(context);</div><div class="line"></div><div class="line">Amigo.work(context, apkFile);</div></pre></td></tr></table></figure>
+<h3 id="maybe-hotfix-needs-to-be-cleared"><a href="#maybe-hotfix-needs-to-be-cleared" class="headerlink" title="maybe hotfix needs to be cleared"></a>maybe hotfix needs to be cleared</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Amigo.clear(context);</div></pre></td></tr></table></figure>
+<h3 id="some-time-tense-operation-is-handled-in-a-new-process-with-an-activity-you-may-customize-it"><a href="#some-time-tense-operation-is-handled-in-a-new-process-with-an-activity-you-may-customize-it" class="headerlink" title="some time-tense operation is handled in a new process with an activity, you may customize it"></a>some time-tense operation is handled in a new process with an activity, you may customize it</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">meta-data</span></span></div><div class="line">    <span class="attr">android:name</span>=<span class="string">"amigo_layout"</span></div><div class="line">    <span class="attr">android:value</span>=<span class="string">"&#123;your-layout-name&#125;"</span> /&gt;</div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">meta-data</span></span></div><div class="line">    <span class="attr">android:name</span>=<span class="string">"amigo_theme"</span></div><div class="line">    <span class="attr">android:value</span>=<span class="string">"&#123;your-theme-name&#125;"</span> /&gt;</div></pre></td></tr></table></figure>
+<h3 id="now-Amigo-support-to-load-new-Activity-and-BroadcastReceiver"><a href="#now-Amigo-support-to-load-new-Activity-and-BroadcastReceiver" class="headerlink" title="now Amigo support to load new Activity and BroadcastReceiver"></a>now Amigo support to load new Activity and BroadcastReceiver</h3><p>you can add activities &amp; receivers whatever you like to add in your hotfix apk,<br>waiting for <strong>Service</strong> &amp; <strong>ContentProvider</strong></p>
+<p>if you would like to RTFC, please checkout <strong>support_new_added_components</strong> branch</p>
+<p>this’s in <strong>beta</strong> version for now, so you may use this</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">classpath <span class="string">'me.ele:amigo:0.0.1-beta1'</span></div><div class="line">...</div></pre></td></tr></table></figure>
+<h3 id="play-with-demo"><a href="#play-with-demo" class="headerlink" title="play with demo"></a>play with demo</h3><p>if you try to experience Amigo’s magic, you can integrate with your own app as you like;<br>also you can play with this app demo following the procedures below.</p>
+<ul>
+<li><p>gradle clean assembleRelease &amp; adb install …/build/outputs/apk/app-release.apk</p>
+</li>
+<li><p>change code wherever you like &amp; gradle clean assembleRelease</p>
+</li>
+<li><p>adb push …/build/outputs/apk/app-release.apk /sdcard/demo.apk</p>
+</li>
+<li><p>kill Amigo demo by yourself &amp; restart to check if your change works</p>
+</li>
+</ul>
+<h3 id="license"><a href="#license" class="headerlink" title="license"></a>license</h3><p>  Copyright 2016 ELEME Inc.</p>
+<p>  Licensed under the Apache License, Version 2.0 (the “License”);<br>  you may not use this file except in compliance with the License.<br>  You may obtain a copy of the License at</p>
+<pre><code>http://www.apache.org/licenses/LICENSE-2.0
+</code></pre><p>  Unless required by applicable law or agreed to in writing, software<br>  distributed under the License is distributed on an “AS IS” BASIS,<br>  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<br>  See the License for the specific language governing permissions and<br>  limitations under the License.</p>
+
+    </div>
+    
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'elememobileblog';
+        var disqus_identifier = '2016/08/26/terminator/';
+        var disqus_title = 'Amigo---Android hotfix terminator';
+        var disqus_url = 'http://mobilists.eleme.io/2016/08/26/terminator/';
+
+        function run_disqus_script(disqus_script){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }
+
+        run_disqus_script('count.js');
+        
+        run_disqus_script('embed.js');
+        
+    </script>
+
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+    
+</article>
+
+
+<nav id="pagination">
+  <div class="pagination-number">
+      
+  </div>
+ <div class="pagination-indicator">
+     
+     <a href="/2016/09/01/Amigo 源码解读/" class="prev-post">< Amigo 源码解读</a>
+     
+
+     
+     <a href="/2016/06/20/浅谈Mantle/" class="next-post">浅谈Mantle ></a>
+     
+ </div>
+</nav>
+
+
+        </div>
+    </div>
+
+    <div id="eleme-bottom-outer">
+        <div id="bottom-inner">
+            <p class="eleme-copyright">&copy; copyright 2016 by Eleme Mobilists</p>
+            <p class="eleme-theme-copyright">eleme-mobile hexo theme by <a target="_blank" href="https://github.com/stephenwzl">stephenw</a></p>
+            <br>
+        </div>
+    </div>
+    
+    
+    <script src="/js/eleme-theme.js"></script>
+    
+    
+</div>
+
+</body>
+</html>

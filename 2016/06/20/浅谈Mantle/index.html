@@ -1,0 +1,154 @@
+
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+  <title>浅谈Mantle - Eleme Mobilists</title>
+
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="/css/eleme-theme.css">
+    
+  
+</head>
+<body>
+
+<div id="wrapper">
+    <div id="eleme-menu-outer">
+        <a href="/"><img src="/img/eleme-logo.png"></a>
+        <div id="menu-inner">
+            
+            <a href="/">主页</a>
+            
+            <a href="/archives">归档</a>
+            
+            <a href="/about">关于</a>
+            
+        </div>
+    </div>
+
+    <div id="eleme-content-outer">
+        <div id="content-inner">
+            <article id="post">
+    <h1 class="post-title">浅谈Mantle</h1>
+    <p class="post-meta">
+        
+        <span class="release">发表于
+            <time datetime="2016-06-20T09:12:15.000Z">
+            2016-06-20
+            </time>
+        </span>
+        
+        
+        <span>&nbsp;分类: <a href="/categories/iOS/">iOS</a></span>
+        
+        
+    </p>
+    <div class="post-wrapper">
+        <p>在公司使用<code>Mantle</code>也差不多有一年，其间有痛有笑，难一一道明。使用期间总算积累了一些经验，在此献丑，或能有益于人；由于是一些知识点的汇总，难免拉杂干涩，写的断断续续，行文并不流畅。所有索引都随文给出，不另外附录；建议核心部分，结合代码理解。另如有错漏，祈谅！</p>
+<h1 id="解析过程"><a href="#解析过程" class="headerlink" title="解析过程"></a><font color="#4590a3">解析过程</font></h1><p><code>Mantle</code>的核心类是<code>MTLJSONAdapter</code>，负责整个解析过程。下面以<code>JSON To Object</code>为例粗略介绍一下的解析流程。</p>
+<p><a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L259" target="_blank" rel="external">相关代码见此</a></p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">- (<span class="keyword">id</span>)modelFromJSONDictionary:(<span class="built_in">NSDictionary</span> *)JSONDictionary error:(<span class="built_in">NSError</span> **)error &#123;</div><div class="line"><span class="comment">// 开始 处理由一堆相关的class来map同一类字典，少见，可忽略</span></div><div class="line"><span class="comment">// 为了结构清晰，删除了这部分代码</span></div><div class="line"><span class="comment">// 结束 处理由一堆相关的class来map同一类字典，少见，可忽略</span></div><div class="line"></div><div class="line"><span class="comment">// 开始 常规的解析流程</span></div><div class="line">	<span class="built_in">NSMutableDictionary</span> *dictionaryValue = [[<span class="built_in">NSMutableDictionary</span> alloc] initWithCapacity:JSONDictionary.count];</div><div class="line"></div><div class="line">	<span class="keyword">for</span> (<span class="built_in">NSString</span> *propertyKey <span class="keyword">in</span> [<span class="keyword">self</span>.modelClass propertyKeys]) &#123;</div><div class="line"></div><div class="line">    <span class="comment">// 开始 单个property的解析</span></div><div class="line">		<span class="keyword">id</span> JSONKeyPaths = <span class="keyword">self</span>.JSONKeyPathsByPropertyKey[propertyKey];</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (JSONKeyPaths == <span class="literal">nil</span>) <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">		<span class="keyword">id</span> value;</div><div class="line">    <span class="comment">// 开始 花式keypath处理</span></div><div class="line">    <span class="comment">// 同样，这部分代码也省略了</span></div><div class="line">    <span class="comment">// 结束花式keypath处理</span></div><div class="line">		<span class="keyword">if</span> (value == <span class="literal">nil</span>) <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">		<span class="keyword">@try</span> &#123;</div><div class="line">      <span class="comment">// 开始 常规的property解析流程</span></div><div class="line">			<span class="built_in">NSValueTransformer</span> *transformer = <span class="keyword">self</span>.valueTransformersByPropertyKey[propertyKey];</div><div class="line">			<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) &#123;</div><div class="line">				<span class="comment">// Map NSNull -&gt; nil for the transformer, and then back for the</span></div><div class="line">				<span class="comment">// dictionary we're going to insert into.</span></div><div class="line">				<span class="keyword">if</span> ([value isEqual:<span class="built_in">NSNull</span>.null]) value = <span class="literal">nil</span>;</div><div class="line"></div><div class="line">				<span class="keyword">if</span> ([transformer respondsToSelector:<span class="keyword">@selector</span>(transformedValue:success:error:)]) &#123;</div><div class="line">					<span class="keyword">id</span>&lt;<span class="built_in">MTLTransformerErrorHandling</span>&gt; errorHandlingTransformer = (<span class="keyword">id</span>)transformer;</div><div class="line"></div><div class="line">					<span class="built_in">BOOL</span> success = <span class="literal">YES</span>;</div><div class="line">					value = [errorHandlingTransformer transformedValue:value success:&amp;success error:error];</div><div class="line"></div><div class="line">					<span class="keyword">if</span> (!success) <span class="keyword">return</span> <span class="literal">nil</span>;</div><div class="line">				&#125; <span class="keyword">else</span> &#123;</div><div class="line">					value = [transformer transformedValue:value];</div><div class="line">				&#125;</div><div class="line"></div><div class="line">				<span class="keyword">if</span> (value == <span class="literal">nil</span>) value = <span class="built_in">NSNull</span>.null;</div><div class="line">			&#125;</div><div class="line"></div><div class="line">			dictionaryValue[propertyKey] = value;</div><div class="line">      <span class="comment">// 结束 常规的property解析流程</span></div><div class="line">		&#125; <span class="keyword">@catch</span> (<span class="built_in">NSException</span> *ex) &#123;</div><div class="line">			<span class="built_in">NSLog</span>(<span class="string">@"*** Caught exception %@ parsing JSON key path \"%@\" from: %@"</span>, ex, JSONKeyPaths, JSONDictionary);</div><div class="line">		&#125;</div><div class="line">    <span class="comment">// 结束 单个property的解析</span></div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">id</span> model = [<span class="keyword">self</span>.modelClass modelWithDictionary:dictionaryValue error:error];</div><div class="line"></div><div class="line">	<span class="keyword">return</span> [model validate:error] ? model : <span class="literal">nil</span>;</div><div class="line"><span class="comment">// 结束 常规解析流程</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个函数前面部分是处理类似类簇的一类model，并不是很常见的需求，这里就不展开；接下来就是整个<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L284-L362" target="_blank" rel="external">常规的解析流程</a>, 无非是遍历整个<code>propertyKeys</code>,  依次解析。下面跟踪一遍单个<code>property</code>的解析。</p>
+<blockquote>
+<p>单个<code>property</code>的解析前面一小半是处理花式<code>keypath</code>的写法，无关大体。真正的解析其实就是这<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L316-L336" target="_blank" rel="external">20行代码</a>。 处理<code>keypath</code>拿到单个<code>property</code>对应的<code>JSON Value</code>, 然后通过<code>valueTransformersByPropertyKey</code>取出对应transformer，转化<code>Value</code>为相应的格式。单个<code>property</code>的解析完成。</p>
+</blockquote>
+<p>解析完所有<code>propertyKeys</code>，就会通过转化后的dic集由<code>modelWithDictionary:</code>去初始化<code>ModelClass</code>，这个过程会走一下<code>validate</code>流程然后通过<code>KVC</code>去设置<code>property</code>。</p>
+<h1 id="三类Transformer"><a href="#三类Transformer" class="headerlink" title="三类Transformer"></a><font color="#4590a3">三类Transformer</font></h1><p>综上可以看出整个解析流程其实非常清晰明，问题核心在<code>transformer</code>。<code>transformer</code>的生成<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L365" target="_blank" rel="external">相关代码在此</a>。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div></pre></td><td class="code"><pre><div class="line">+ (<span class="built_in">NSDictionary</span> *)valueTransformersForModelClass:(Class)modelClass &#123;</div><div class="line">	<span class="built_in">NSParameterAssert</span>(modelClass != <span class="literal">nil</span>);</div><div class="line">	<span class="built_in">NSParameterAssert</span>([modelClass conformsToProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">MTLJSONSerializing</span>)]);</span></div><div class="line"></div><div class="line">	<span class="built_in">NSMutableDictionary</span> *result = [<span class="built_in">NSMutableDictionary</span> dictionary];</div><div class="line"></div><div class="line">	<span class="keyword">for</span> (<span class="built_in">NSString</span> *key <span class="keyword">in</span> [modelClass propertyKeys]) &#123;</div><div class="line">    <span class="comment">// keyTransformer 的生成</span></div><div class="line">		SEL selector = <span class="built_in">MTLSelectorWithKeyPattern</span>(key, <span class="string">"JSONTransformer"</span>);</div><div class="line">		<span class="keyword">if</span> ([modelClass respondsToSelector:selector]) &#123;</div><div class="line">			IMP imp = [modelClass methodForSelector:selector];</div><div class="line">			<span class="built_in">NSValueTransformer</span> * (*function)(<span class="keyword">id</span>, SEL) = (__typeof__(function))imp;</div><div class="line">			<span class="built_in">NSValueTransformer</span> *transformer = function(modelClass, selector);</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) result[key] = transformer;</div><div class="line"></div><div class="line">			<span class="keyword">continue</span>;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		<span class="keyword">if</span> ([modelClass respondsToSelector:<span class="keyword">@selector</span>(JSONTransformerForKey:)]) &#123;</div><div class="line">			<span class="built_in">NSValueTransformer</span> *transformer = [modelClass JSONTransformerForKey:key];</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) &#123;</div><div class="line">				result[key] = transformer;</div><div class="line">				<span class="keyword">continue</span>;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		objc_property_t property = class_getProperty(modelClass, key.UTF8String);</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (property == <span class="literal">NULL</span>) <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">		mtl_propertyAttributes *attributes = mtl_copyPropertyAttributes(property);</div><div class="line">		@onExit &#123;</div><div class="line">			free(attributes);</div><div class="line">		&#125;;</div><div class="line"></div><div class="line">		<span class="built_in">NSValueTransformer</span> *transformer = <span class="literal">nil</span>;</div><div class="line">    <span class="comment">// type transformer 的生成</span></div><div class="line">		<span class="keyword">if</span> (*(attributes-&gt;type) == *(<span class="keyword">@encode</span>(<span class="keyword">id</span>))) &#123;</div><div class="line">			Class propertyClass = attributes-&gt;objectClass;</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (propertyClass != <span class="literal">nil</span>) &#123;</div><div class="line">				transformer = [<span class="keyword">self</span> transformerForModelPropertiesOfClass:propertyClass];</div><div class="line">			&#125;</div><div class="line"></div><div class="line"></div><div class="line">			<span class="comment">// For user-defined MTLModel, try parse it with dictionaryTransformer.</span></div><div class="line">			<span class="keyword">if</span> (<span class="literal">nil</span> == transformer &amp;&amp; [propertyClass conformsToProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">MTLJSONSerializing</span>)]) </span>&#123;</div><div class="line">				transformer = [<span class="keyword">self</span> dictionaryTransformerWithModelClass:propertyClass];</div><div class="line">			&#125;</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (transformer == <span class="literal">nil</span>) transformer = [<span class="built_in">NSValueTransformer</span> mtl_validatingTransformerForClass:propertyClass ?: <span class="built_in">NSObject</span>.class];</div><div class="line">		&#125; <span class="keyword">else</span> &#123;</div><div class="line">			transformer = [<span class="keyword">self</span> transformerForModelPropertiesOfObjCType:attributes-&gt;type] ?: [<span class="built_in">NSValueTransformer</span> mtl_validatingTransformerForClass:<span class="built_in">NSValue</span>.class];</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) result[key] = transformer;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">return</span> result;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>按性质大概可以分为三类<code>transformer</code>：</p>
+<h2 id="keyTransformer"><a href="#keyTransformer" class="headerlink" title="keyTransformer"></a><font color="#5F9EA0">keyTransformer</font></h2><p>key为<code>property name</code>。</p>
+<blockquote>
+<p>首先根据<code>key</code>动态构造的<code>SEL</code>(<code>keyJSONTransformer</code>)去获取；未果则转入<code>JSONTransformerForKey:(NSSString *)key</code>获取；未果则继续获取第二类transformer。目前这类transformer主要集中在对<code>NSArray</code>（NSArray目前业界好像也有一些讨巧的做法，后面介绍）和一些非常规的<code>transformer</code>的处理，因为此处理论上你可以提供任意类型的<code>transformer</code>来满足复杂多样的需求。</p>
+</blockquote>
+<h2 id="type-transformer"><a href="#type-transformer" class="headerlink" title="type transformer"></a><font color="#5F9EA0">type transformer</font></h2><p><code>type</code>即为通过runtime获取<code>property</code>的类型，对象类型和基础类型会有不同的处理。</p>
+<h3 id="对象类型"><a href="#对象类型" class="headerlink" title="对象类型"></a><font color="#35c0a3">对象类型</font></h3><blockquote>
+<p>先根据<code>transformerForModelPropertiesOfClass:</code>去获取针对一些预置的,未实现<code>MTLJSONSerializing</code>类型的<code>transformer</code>,比如NSURL，NSDate（目前Mantle里面只实现了NSURL,至于为什么没有实现别的类型见这个<a href="https://github.com/Mantle/Mantle/issues/147" target="_blank" rel="external">issue</a>）；未果,当前<code>Class</code>若实现<code>MTLJSONSerializing</code>, 则为它生成一个transformer，这个是我们应用中的大部分场景，即一大堆自定义的<code>Model</code>，我们不需要做任何其他的事，只需要声明<code>property</code>时写上对应的类型就可以了，是不是人心大快！仍旧未果，就会通过<code>mtl_validatingTransformerForClass:</code>去生成一个<code>validate</code>的transformer（这类transformer的作用后面详述）。</p>
+</blockquote>
+<h3 id="基础类型"><a href="#基础类型" class="headerlink" title="基础类型"></a><font color="#35c0a3">基础类型</font></h3><blockquote>
+<p>比较简单。首先通过<code>transformerForModelPropertiesOfObjCType:</code>获取一个<code>transformer</code>;未果也是生成一个<code>validate</code>的<code>transformer</code>。</p>
+</blockquote>
+<h2 id="KVC也算一类transformer"><a href="#KVC也算一类transformer" class="headerlink" title="KVC也算一类transformer"></a><font color="#5F9EA0">KVC也算一类transformer</font></h2><blockquote>
+<p>当然除了这两类的<code>transformer</code>，因为最终<code>setValue</code>时会调用<code>KVC</code>去完成，<code>KVC</code>对基础类型的<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/KeyValueCoding/Articles/DataTypes.html#//apple_ref/doc/uid/20002171-BAJEAIEE" target="_blank" rel="external">自动解包</a>，也可以算作是一类<code>transformer</code>。</p>
+</blockquote>
+<h1 id="Transformer的使用"><a href="#Transformer的使用" class="headerlink" title="Transformer的使用"></a><font color="#4590a3">Transformer的使用</font></h1><h2 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a><font color="#5F9EA0">基本使用</font></h2><p>结合上面的解析和<code>transformer</code>的生成流程，可以看出我们的生活确实简单了。首先在<code>property</code>里面声明好属性，然后通过<code>JSONKeyPathsByPropertyKey</code>做好<code>property</code>和<code>json key</code>的映射关系，基本上整个<code>Model</code>基本就完成了。</p>
+<h2 id="Array的处理"><a href="#Array的处理" class="headerlink" title="Array的处理"></a><font color="#5F9EA0">Array的处理</font></h2><p>但这个过程有个例外，就是对<code>NSArray</code>的处理。目前OC里面的<code>Array</code>泛型是编译时的，运行时获取不到数组中对象类型，这就需要我们通过通过<code>arrayTransformerWithModelClass：</code>构造一个上面的<code>typeTransformer</code>返回。但直到某一天看到有人给<code>YYModel</code>提了个<a href="https://github.com/ibireme/YYModel/issues/79" target="_blank" rel="external">issue</a>，发现这个问题似乎已经有了一个可能的解法。构造一个与<code>Model Class</code>同名的<code>protocol</code>让<code>NSArray</code> conform，这时通过<code>runtime</code>就可以取到这个<code>protocol name</code>，作为<code>Model Class</code>的name构造一个<code>type transformer</code>。这个feature JSONModel应该支持了一段时间，目前<a href="https://github.com/ibireme/YYModel/releases/tag/1.0.4" target="_blank" rel="external">YY已经集成</a>，<code>Mantle</code>何时支持，拭目以待！</p>
+<h2 id="KVC里的小天地"><a href="#KVC里的小天地" class="headerlink" title="KVC里的小天地"></a><font color="#5F9EA0">KVC里的小天地</font></h2><p>解析完成后会调用KVC去setValue。KVC会对基础类型会做<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/KeyValueCoding/Articles/DataTypes.html#//apple_ref/doc/uid/20002171-BAJEAIEE" target="_blank" rel="external">自动wrapping和unwrapping</a>，省了很多事，但有个特性也需要注意。就是<code>- (void)setValue:(nullable id)value forKey:(NSString *)key</code>当key是基础类型而value是NSNull时会调用<code>- (void)setNilValueForKey:(NSString *)key</code>, 默认这个会崩溃，但Mantle并没有给你处理这种情况…所以需要我们在给基类给一个默认实现。</p>
+<h2 id="type-transformer是什么"><a href="#type-transformer是什么" class="headerlink" title="type transformer是什么"></a><font color="#5F9EA0">type transformer是什么</font></h2><p>从上面我们可以看到系统已经为NSURL添加了默认的transformer,即<code>NSURLJSONTransformer</code>，默认会对非空字符串调用<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/NSValueTransformer%2BMTLPredefinedTransformerAdditions.m#L41" target="_blank" rel="external">直接调用<code>[NSURL URLWithString:str]</code>构造字符串</a>。有个问题是在字符串长度为0的情况下，这个函数还是会返回内容为空的URL对象。很多业务逻辑如果没有考虑到这一点是要犯错误的。对于UIColor，NSDate这类对象，如果整个应用的格式是统一的，按理我们也可以加上自己的这类transformer，这个顺理成章毋庸置疑。</p>
+<h2 id="巧用type-transformer"><a href="#巧用type-transformer" class="headerlink" title="巧用type transformer"></a><font color="#5F9EA0">巧用type transformer</font></h2><p>结合<code>type transformer</code>其实我们还可以做一些更巧妙的事情。有一些类似ID的主键，服务器因为存储的是整形，出于方便和效率方面的考虑，服务端会直接返回一个整形的数据。但客户端在使用类型一直会把这个类型当做字符串使用，很多情况下就不免加上stringValue来转换类型或者加上显示的keyTransformer去显示转化。这时其实可以考虑加上一个NSStringJSONTransformer,转化可能的NSNumber为string，可谓一劳永逸。但这有个问题是，这个Model在转化为JSON时会丢失掉它原始的类型，但回传的需求，在应用中使用的太少，基本就忽略。</p>
+<h1 id="Validate"><a href="#Validate" class="headerlink" title="Validate"></a><font color="#4590a3">Validate</font></h1><p>validate从性质上也可以分为两类，一类为校验JSON数据是否返回了约定的格式，另一类校验返回的数据是否业务场景。</p>
+<h2 id="数据格式的校验（Mantle世界的麦田守望者"><a href="#数据格式的校验（Mantle世界的麦田守望者" class="headerlink" title="数据格式的校验（Mantle世界的麦田守望者)"></a><font color="#5F9EA0">数据格式的校验（Mantle世界的麦田守望者)</font></h2><p>校验数据格式的工作基本有上文提到的<code>validate transformer</code>提供，这个<code>transformer</code>位置重要，堪比麦田守望者。它会校验此时的<code>json object</code>是否是符合声明的类型，不是则及时报错。如果没有这个<code>transformer</code>，试想我们预期是<code>NSString</code>而拿到一个<code>NSNumber</code>会发生什么！数据格式错误往往是服务器出现了什么重大错误，或者http请求被恶意劫持，比较难以根治和解决，有了这个检验至少可以显著降低客户端的崩溃率。</p>
+<h2 id="业务逻辑的校验（后端不哭-）"><a href="#业务逻辑的校验（后端不哭-）" class="headerlink" title="业务逻辑的校验（后端不哭..）"></a><font color="#5F9EA0">业务逻辑的校验（后端不哭..）</font></h2><p>业务逻辑的校验需要我们自己实现，返回的数据此时虽已确保类型无误。但我们还是不能确保它就是符合业务规范的，比如说关键的主键却为空，或者关联属性出现互相矛盾的结果。这时我们就需要我们根据业务需求去实现validate。理论上当然是逻辑越严密越好，但这时会导致代码异常繁琐，现实中一般做的并不多。因为这类错误，基本是服务端程序员的逻辑错误，所以只要他们能即使改正，客户端是可保无虞。</p>
+<h3 id="巧妙解决非空的判断"><a href="#巧妙解决非空的判断" class="headerlink" title="巧妙解决非空的判断"></a><font color="#35c0a3">巧妙解决非空的判断</font></h3><p>结合上面的NSArray的处理，其实我们也可以实现一个简单的Not NULL的实现，声明一个<code>NotNUll</code>的protocol，非空<code>NSString</code>，<code>NSNumber</code>属性conform一下。然后通过<code>runtime</code>去validate相关属性，是不是感觉清晰了不少…</p>
+<h1 id="一些实践"><a href="#一些实践" class="headerlink" title="一些实践"></a><font color="#4590a3">一些实践</font></h1><h2 id="写好keypath"><a href="#写好keypath" class="headerlink" title="写好keypath"></a><font color="#5F9EA0">写好keypath</font></h2><p>keypath推荐结合用<a href="https://github.com/jspahrsummers/libextobjc/tree/master/extobjc" target="_blank" rel="external">extobjc</a>结合code snippets，编译时检查，值得拥有。</p>
+<h2 id="加入默认值"><a href="#加入默认值" class="headerlink" title="加入默认值"></a><font color="#5F9EA0">加入默认值</font></h2><p>有些时候，默认值是非空或0，可以在MTModel的基类里面的<code>- (instancetype)initWithDictionary:(NSDictionary *)dictionary error:(NSError **)error {</code>里面加入一些默认值的处理。</p>
+<p>算了，打住，不写了。</p>
+
+    </div>
+    
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'elememobileblog';
+        var disqus_identifier = '2016/06/20/浅谈Mantle/';
+        var disqus_title = '浅谈Mantle';
+        var disqus_url = 'http://mobilists.eleme.io/2016/06/20/浅谈Mantle/';
+
+        function run_disqus_script(disqus_script){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }
+
+        run_disqus_script('count.js');
+        
+        run_disqus_script('embed.js');
+        
+    </script>
+
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+    
+</article>
+
+
+<nav id="pagination">
+  <div class="pagination-number">
+      
+  </div>
+ <div class="pagination-indicator">
+     
+     <a href="/2016/08/26/terminator/" class="prev-post">< Amigo---Android hotfix terminator</a>
+     
+
+     
+     <a href="/2016/04/12/ReactiveCocoa实践/" class="next-post">ReactiveCocoa实践 ></a>
+     
+ </div>
+</nav>
+
+
+        </div>
+    </div>
+
+    <div id="eleme-bottom-outer">
+        <div id="bottom-inner">
+            <p class="eleme-copyright">&copy; copyright 2016 by Eleme Mobilists</p>
+            <p class="eleme-theme-copyright">eleme-mobile hexo theme by <a target="_blank" href="https://github.com/stephenwzl">stephenw</a></p>
+            <br>
+        </div>
+    </div>
+    
+    
+    <script src="/js/eleme-theme.js"></script>
+    
+    
+</div>
+
+</body>
+</html>
