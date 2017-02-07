@@ -1,3 +1,4 @@
 [submodule "themes/next"]
 	path = themes/next
 	url = git@github.com:eleme/mobilists-theme-next.git
+	branch = elemetheme
