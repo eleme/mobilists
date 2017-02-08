@@ -744,8 +744,10 @@ pre .javascript .function {
 #pagination {
   height: 44px;
   width: 100%;
-  border-top: 1px #eee solid;
   margin-top: 16px;
+}
+#pagination .page-number {
+  text-align: center;
 }
 .pagination-number {
   height: 44px;
@@ -759,7 +761,7 @@ pre .javascript .function {
   float: left;
   margin-left: 8px;
   margin-top: 12px;
-  color: eleme-lin;
+  color: #3190e8;
 }
 @media screen and (max-width: 640px) {
   .pagination-indicator .prev-post {
@@ -784,10 +786,10 @@ pre .javascript .function {
   }
 }
 .pagination-indicator .page-number {
-  color: #666;
+  color: color-blue;
   width: 100%;
   margin: 0 auto;
-  text-align: center;
+  text-align: center !important;
   padding-top: 12px;
 }
 .pagination-indicator .next-page {
