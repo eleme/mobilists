@@ -372,7 +372,7 @@
     <link href="http://mobilists.eleme.io/2016/06/20/%E6%B5%85%E8%B0%88Mantle/"/>
     <id>http://mobilists.eleme.io/2016/06/20/浅谈Mantle/</id>
     <published>2016-06-20T09:12:15.000Z</published>
-    <updated>2017-02-07T09:21:46.000Z</updated>
+    <updated>2017-02-08T07:50:49.000Z</updated>
     
     <content type="html"><![CDATA[<p>在公司使用<code>Mantle</code>也差不多有一年，其间有痛有笑，难一一道明。使用期间总算积累了一些经验，在此献丑，或能有益于人；由于是一些知识点的汇总，难免拉杂干涩，写的断断续续，行文并不流畅。所有索引都随文给出，不另外附录；建议核心部分，结合代码理解。另如有错漏，祈谅！</p>
 <h1 id="解析过程"><a href="#解析过程" class="headerlink" title="解析过程"></a><font color="#4590a3">解析过程</font></h1><p><code>Mantle</code>的核心类是<code>MTLJSONAdapter</code>，负责整个解析过程。下面以<code>JSON To Object</code>为例粗略介绍一下的解析流程。</p>
