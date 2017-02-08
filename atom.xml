@@ -63,7 +63,7 @@
     <link href="http://mobilists.eleme.io/2016/09/01/Amigo%20%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/"/>
     <id>http://mobilists.eleme.io/2016/09/01/Amigo 源码解读/</id>
     <published>2016-09-01T09:18:09.000Z</published>
-    <updated>2017-02-07T09:21:46.000Z</updated>
+    <updated>2017-02-08T07:46:35.000Z</updated>
     
     <content type="html"><![CDATA[<h1 id="Amigo-源码解读"><a href="#Amigo-源码解读" class="headerlink" title="Amigo 源码解读"></a>Amigo 源码解读</h1><p>现在 hotfix 框架有很多，原理大同小异，基本上是基于<a href="https://mp.weixin.qq.com/s?__biz=MzI1MTA1MzM2Nw==&amp;mid=400118620&amp;idx=1&amp;sn=b4fdd5055731290eef12ad0d17f39d4a" target="_blank" rel="external">qq空间这篇文章</a> 或者<a href="http://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&amp;mid=2649286306&amp;idx=1&amp;sn=d6b2865e033a99de60b2d4314c6e0a25&amp;scene=1&amp;srcid=0811AOttpqUnh1Wu5PYcXbnZ#rd" target="_blank" rel="external">微信的方案</a>。可惜的是微信的 Tinker 以及 QZone 都没有将其具体实现开源出来，只是在文章中分析了现有各个 hotfix 框架的优缺点以及他们的实现方案。Amigo 原理与 Tinker 基本相同，但是在 Tinker 的基础上，进一步实现了 so 文件、资源文件、Activity、BroadcastReceiver 的修复，几乎可以号称全面修复，不愧 Amigo（朋友）这个称号，能在危急时刻送来全面的帮助。</p>
 <p>首先我们先来看看如何使用这个库。<br>库地址：<a href="https://github.com/eleme/Amigo" target="_blank" rel="external">https://github.com/eleme/Amigo</a></p>
@@ -104,41 +104,35 @@
 <ul>
 <li>释放 Dex 到指定目录</li>
 <li><p>拷贝 so 文件到 Amigo 的指定目录下<br>拷贝 so 文件是通过反射去调用 <code>NativeLibraryHelper</code>这个类的<code>nativeCopyNativeBinaries()</code>方法，但这个方法在不同版本上有不同的实现。</p>
-<pre><code>* 如果版本号在21以下
-
-    **NativeLibraryHelper**
-
-  <figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinariesIfNeededLI(<span class="built_in">File</span> apkFile, <span class="built_in">File</span> sharedLibraryDir) &#123;</div><div class="line">       final <span class="keyword">String</span> cpuAbi = Build.CPU_ABI;</div><div class="line">       final <span class="keyword">String</span> cpuAbi2 = Build.CPU_ABI2;</div><div class="line">       <span class="built_in">return</span> nativeCopyNativeBinaries(apkFile.getPath(), sharedLibraryDir.getPath(), cpuAbi,</div><div class="line">               cpuAbi2);</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
-</code></pre></li>
+<ul>
+<li><p>如果版本号在21以下</p>
+<p>  <strong>NativeLibraryHelper</strong></p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinariesIfNeededLI(<span class="built_in">File</span> apkFile, <span class="built_in">File</span> sharedLibraryDir) &#123;</div><div class="line">       final <span class="keyword">String</span> cpuAbi = Build.CPU_ABI;</div><div class="line">       final <span class="keyword">String</span> cpuAbi2 = Build.CPU_ABI2;</div><div class="line">       <span class="built_in">return</span> nativeCopyNativeBinaries(apkFile.getPath(), sharedLibraryDir.getPath(), cpuAbi,</div><div class="line">               cpuAbi2);</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+</li>
 </ul>
-<pre><code>      会去反射调用这个方法，其中系统会自动判断出 primaryAbi 和 secondAbi。
-
-* 如果版本号在21以上
-`copyNativeBinariesIfNeededLI(file, file)`这个方法已经被废弃了，需要去反射调用这个方法
-
-    **NativeLibraryHelper**
-
-    <figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinaries(Handle handle, <span class="built_in">File</span> sharedLibraryDir, <span class="keyword">String</span> abi) &#123;</div><div class="line">       <span class="built_in">for</span> (<span class="keyword">long</span> apkHandle : handle.apkHandles) &#123;</div><div class="line">           <span class="keyword">int</span> res = nativeCopyNativeBinaries(apkHandle, sharedLibraryDir.getPath(), abi,</div><div class="line">                   handle.extractNativeLibs, HAS_NATIVE_BRIDGE);</div><div class="line">           <span class="built_in">if</span> (res != INSTALL_SUCCEEDED) &#123;</div><div class="line">               <span class="built_in">return</span> res;</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">       <span class="built_in">return</span> INSTALL_SUCCEEDED;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
-
-
-    所以首先得去获得一个`NativeLibraryHelper$Handle`类的实例。之后就是找 primaryAbi。Amigo 先对机器的位数做了判断，如果是64位的机子，就只找64位的 abi，如果是32位的，就只找32位的 abi。然后将 Handle 实例当做参数去调用`NativeLibraryHelper`的`findSupportedAbi`来获得primaryAbi。最后再去调用`copyNativeBinaries`去拷贝 so 文件。
-
-对于 so 文件加载的原理可以参考[这篇文章](http://mp.weixin.qq.com/s?__biz=MzA3NTYzODYzMg==&amp;mid=2653577702&amp;idx=1&amp;sn=1288c77cd8fc2db68dc92cf18d675ace&amp;scene=4#wechat_redirect)
-</code></pre><ul>
+<p>会去反射调用这个方法，其中系统会自动判断出 primaryAbi 和 secondAbi。</p>
+<ul>
+<li><p>如果版本号在21以上  </p>
+<p><code>copyNativeBinariesIfNeededLI(file, file)</code>这个方法已经被废弃了，需要去反射调用这个方法</p>
+<p><strong>NativeLibraryHelper</strong></p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinaries(Handle handle, <span class="built_in">File</span> sharedLibraryDir, <span class="keyword">String</span> abi) &#123;</div><div class="line">       <span class="built_in">for</span> (<span class="keyword">long</span> apkHandle : handle.apkHandles) &#123;</div><div class="line">           <span class="keyword">int</span> res = nativeCopyNativeBinaries(apkHandle, sharedLibraryDir.getPath(), abi,</div><div class="line">                   handle.extractNativeLibs, HAS_NATIVE_BRIDGE);</div><div class="line">           <span class="built_in">if</span> (res != INSTALL_SUCCEEDED) &#123;</div><div class="line">               <span class="built_in">return</span> res;</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">       <span class="built_in">return</span> INSTALL_SUCCEEDED;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<p>所以首先得去获得一个<code>NativeLibraryHelper$Handle</code>类的实例。之后就是找 primaryAbi。Amigo 先对机器的位数做了判断，如果是64位的机子，就只找64位的 abi，如果是32位的，就只找32位的 abi。然后将 Handle 实例当做参数去调用<code>NativeLibraryHelper</code>的<code>findSupportedAbi</code>来获得primaryAbi。最后再去调用<code>copyNativeBinaries</code>去拷贝 so 文件。</p>
+<p>对于 so 文件加载的原理可以参考<a href="http://mp.weixin.qq.com/s?__biz=MzA3NTYzODYzMg==&amp;mid=2653577702&amp;idx=1&amp;sn=1288c77cd8fc2db68dc92cf18d675ace&amp;scene=4#wechat_redirect" target="_blank" rel="external">这篇文章</a></p>
+<ul>
 <li><p>优化 dex 文件</p>
 <p>  <strong>ApkReleaseActivity.java</strong></p>
   <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">dexOptimization</span><span class="params">()</span> </span>&#123;</div><div class="line">	...</div><div class="line">       <span class="keyword">for</span> (File dex : validDexes) &#123;</div><div class="line">           <span class="keyword">new</span> DexClassLoader(dex.getAbsolutePath(), optimizedDir.getAbsolutePath(), <span class="keyword">null</span>, DexUtils.getPathClassLoader());</div><div class="line">           Log.e(TAG, <span class="string">"dexOptimization finished--&gt;"</span> + dex);</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
 </li>
 </ul>
-<pre><code>DexClassLoader 没有做什么事情，只是调用了父类构造器，他的父类是 BaseDexClassLoader。在 BaseDexClassLoader 的构造器中又去构造了一个DexPathList 对象。
-在`DexPathList`类中，有一个 Element 数组
-
-**DexPathList**
-
+<p>DexClassLoader 没有做什么事情，只是调用了父类构造器，他的父类是 BaseDexClassLoader。在 BaseDexClassLoader 的构造器中又去构造了一个DexPathList 对象。<br>    在<code>DexPathList</code>类中，有一个 Element 数组</p>
+<p><strong>DexPathList</strong></p>
 <figure class="highlight crystal"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">/** list <span class="keyword">of</span> dex/resource (<span class="class"><span class="keyword">class</span> <span class="title">path</span>) <span class="title">elements</span> */</span></div><div class="line"><span class="keyword">private</span> final Element[] dexElements;</div></pre></td></tr></table></figure>
-
-Element 就是对 Dex 的封装。所以一个 Element 对应一个 Dex。这个 Element 在后文中会提到。
-</code></pre><p>  优化 dex 只需要在构造 DexClassLoader 对象的时候将 dex 的路径传进去，系统会在最后会通过<code>DexFile</code>的</p>
+<p>Element 就是对 Dex 的封装。所以一个 Element 对应一个 Dex。这个 Element 在后文中会提到。</p>
+<p>  优化 dex 只需要在构造 DexClassLoader 对象的时候将 dex 的路径传进去，系统会在最后会通过<code>DexFile</code>的</p>
 <p>  <strong>DexFile.java</strong></p>
   <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">native</span> <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">openDexFile</span><span class="params">(String sourceName, String outputName,</span></span></div><div class="line">      <span class="keyword">int</span> flags) <span class="keyword">throws</span> IOException;</div></pre></td></tr></table></figure>
 <p>   来这个方法来加载 dex，加载的同时会对其做优化处理。</p>
@@ -484,49 +478,59 @@ Element 就是对 Dex 的封装。所以一个 Element 对应一个 Dex。这个
     <link href="http://mobilists.eleme.io/2016/03/28/%E9%A5%BF%E4%BA%86%E4%B9%88%E6%8F%92%E4%BB%B6%E5%8C%96%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%EF%BC%88%E4%B8%80%EF%BC%89/"/>
     <id>http://mobilists.eleme.io/2016/03/28/饿了么插件化开发实践（一）/</id>
     <published>2016-03-28T09:18:09.000Z</published>
-    <updated>2017-02-07T09:21:46.000Z</updated>
+    <updated>2017-02-08T07:55:11.000Z</updated>
     
     <content type="html"><![CDATA[<h2 id="痛点"><a href="#痛点" class="headerlink" title="痛点"></a>痛点</h2><p>随着饿了么APP业务急速的发展，项目组内部各个模块的业务越来越多，同时其他项目组也有在主APP集成的需求，现行的Single Code Repo越来越不适合项目的推进。</p>
 <h4 id="团队内部需求"><a href="#团队内部需求" class="headerlink" title="团队内部需求"></a>团队内部需求</h4><p>目前饿了么APP是基于业务分成Shopping、Booking、Order、Account、Marketing和Application六个模块，每个模块由相关的开发人员进行负责。APP方法数早就超过了65k，最新发布的5.9.0版本方法数已经到达了85k。</p>
-<pre><code>1、业务量比较复杂，六个模块一共占去了30k
-
-2、为了避免开发中出现大量的boilerplate code，写了很多工具，在compile time 
-   auto generate code
-
-3、业务之外，项目中也依赖了很多团队各位小伙伴写的给力库，比如图片解析、HotFix、ORM
-
-4、同时团队对开源也比较活跃，使用了一些很赞的library，如retrofit、RxJava、OkHttp
-
-5、再加上庞大的Android Support Library
-</code></pre><p>方法数越来越大，codebase也越来越庞大。快速的发版周期，codebase只会越来越庞大，这时来自团队内部推动模块化开发的声音逐渐起来。</p>
-<pre><code>1、不管是开发new feature，还是对代码的重构，引入bug的风险也越来越大
-
-2、虽然基于业务分包，代码逻辑还算比较清晰，但是各个模块的耦合也越来越重
-
-3、在同一repo下开发，一个模块的重构很可能会影响到其他模块，导致小伙伴对refactor code
-   比较谨慎，不利于个人能力的发挥，也不利于项目的发展，这当然不是我们愿意看到的
-</code></pre><h4 id="公司内部需求"><a href="#公司内部需求" class="headerlink" title="公司内部需求"></a>公司内部需求</h4><p>使用过饿了么APP的同学都知道，饿了么首页有很多运营位，这些运营位有一些是被其他事业部占去的，比如早餐。这些坑位的产品同学也希望他们的页面如丝滑般流畅，对用户体验比较有要求，他们不满足于H5，也不满足于react-native。这种情况下，只能上native code了，但是不同项目组之间有着不同的研发周期，使得我们一起维护一个codebase的想法不大现实。</p>
+<ol>
+<li><p>业务量比较复杂，六个模块一共占去了30k</p>
+</li>
+<li><p>为了避免开发中出现大量的boilerplate code，写了很多工具，在compile time auto generate code</p>
+</li>
+<li><p>业务之外，项目中也依赖了很多团队各位小伙伴写的给力库，比如图片解析、HotFix、ORM</p>
+</li>
+<li><p>同时团队对开源也比较活跃，使用了一些很赞的library，如retrofit、RxJava、OkHttp</p>
+</li>
+<li><p>再加上庞大的Android Support Library</p>
+</li>
+</ol>
+<p>方法数越来越大，codebase也越来越庞大。快速的发版周期，codebase只会越来越庞大，这时来自团队内部推动模块化开发的声音逐渐起来。</p>
+<ol>
+<li><p>不管是开发new feature，还是对代码的重构，引入bug的风险也越来越大</p>
+</li>
+<li><p>虽然基于业务分包，代码逻辑还算比较清晰，但是各个模块的耦合也越来越重</p>
+</li>
+<li><p>在同一repo下开发，一个模块的重构很可能会影响到其他模块，导致小伙伴对refactor code 比较谨慎，不利于个人能力的发挥，也不利于项目的发展，这当然不是我们愿意看到的</p>
+</li>
+</ol>
+<h4 id="公司内部需求"><a href="#公司内部需求" class="headerlink" title="公司内部需求"></a>公司内部需求</h4><p>使用过饿了么APP的同学都知道，饿了么首页有很多运营位，这些运营位有一些是被其他事业部占去的，比如早餐。这些坑位的产品同学也希望他们的页面如丝滑般流畅，对用户体验比较有要求，他们不满足于H5，也不满足于react-native。这种情况下，只能上native code了，但是不同项目组之间有着不同的研发周期，使得我们一起维护一个codebase的想法不大现实。</p>
 <h2 id="Plugin-Dev-规划"><a href="#Plugin-Dev-规划" class="headerlink" title="Plugin Dev 规划"></a>Plugin Dev 规划</h2><p>针对插件化开发的规划，定义了几点需求。</p>
-<pre><code>1、基于模块进行拆分，把一个不易维护的大APP变成多个精简的小APP
-
-2、满足公司内部的需求，为其他团队提供插件支持，最好可以直接把一个独立的APK load起来
-
-3、可随意加载、卸载插件APP
-
-4、插件APP可免升级更新
-
-5、满足不同的研发周期，可降级展示插件APP，如 H5/native随意切换显示
-
-6、隔离插件的crash
-
-7、安全性校验，防止插件被劫持
-</code></pre><h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>面对上面的业务场景，我们就理所当然的走上了插件化的不归路了。所幸2015年国内Android圈迎来了一波开源小高潮，有一些比较成熟的案例和library可供参考，我们饿了么在这条路上不是一个人在奋斗。业务达到一定量级瓶颈，codebase越来越难以维护的场景下，插件化开发是目前比较靠谱的一条路，很多的同学都已经在这路上走了很远，比如携程、360。</p>
+<ol>
+<li><p>基于模块进行拆分，把一个不易维护的大APP变成多个精简的小APP</p>
+</li>
+<li><p>满足公司内部的需求，为其他团队提供插件支持，最好可以直接把一个独立的APK load起来</p>
+</li>
+<li><p>可随意加载、卸载插件APP</p>
+</li>
+<li><p>插件APP可免升级更新</p>
+</li>
+<li><p>满足不同的研发周期，可降级展示插件APP，如 H5/native随意切换显示</p>
+</li>
+<li><p>隔离插件的crash</p>
+</li>
+<li><p>安全性校验，防止插件被劫持</p>
+</li>
+</ol>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>面对上面的业务场景，我们就理所当然的走上了插件化的不归路了。所幸2015年国内Android圈迎来了一波开源小高潮，有一些比较成熟的案例和library可供参考，我们饿了么在这条路上不是一个人在奋斗。业务达到一定量级瓶颈，codebase越来越难以维护的场景下，插件化开发是目前比较靠谱的一条路，很多的同学都已经在这路上走了很远，比如携程、360。</p>
 <p>来自wequick的<a href="https://github.com/wequick/Small" target="_blank" rel="external">Small</a>、还有CtripMobile的<a href="https://github.com/CtripMobile/DynamicAPK" target="_blank" rel="external">DynamicAPK</a>都是通过在同一进程中加载，重心放在在资源的冲突解决上；而来自Qihoo360的<a href="https://github.com/Qihoo360/DroidPlugin" target="_blank" rel="external">DroidPlugin</a>的实现则独树一帜，为了避免处理复杂的资源问题，直接一个Plugin对应一个独立的process，构建了一个沙箱，一个运行环境。</p>
 <p>基于不同的实现方式，大致可以把插件化开发的方向分成两个</p>
-<pre><code>1、Host &amp; Plugin in a single process
-
-2、create another process when load a plugin
-</code></pre><p>这是一个开篇文章，后面会针对这两种不同的实现方式分别做详细的分析和解读。有兴趣的同学可以在评论区留言</p>
+<ol>
+<li><p>Host &amp; Plugin in a single process</p>
+</li>
+<li><p>create another process when load a plugin</p>
+</li>
+</ol>
+<p>这是一个开篇文章，后面会针对这两种不同的实现方式分别做详细的分析和解读。有兴趣的同学可以在评论区留言</p>
 ]]></content>
     
     <summary type="html">

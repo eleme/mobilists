@@ -95,41 +95,35 @@
 <ul>
 <li>释放 Dex 到指定目录</li>
 <li><p>拷贝 so 文件到 Amigo 的指定目录下<br>拷贝 so 文件是通过反射去调用 <code>NativeLibraryHelper</code>这个类的<code>nativeCopyNativeBinaries()</code>方法，但这个方法在不同版本上有不同的实现。</p>
-<pre><code>* 如果版本号在21以下
-
-    **NativeLibraryHelper**
-
-  <figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinariesIfNeededLI(<span class="built_in">File</span> apkFile, <span class="built_in">File</span> sharedLibraryDir) &#123;</div><div class="line">       final <span class="keyword">String</span> cpuAbi = Build.CPU_ABI;</div><div class="line">       final <span class="keyword">String</span> cpuAbi2 = Build.CPU_ABI2;</div><div class="line">       <span class="built_in">return</span> nativeCopyNativeBinaries(apkFile.getPath(), sharedLibraryDir.getPath(), cpuAbi,</div><div class="line">               cpuAbi2);</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
-</code></pre></li>
+<ul>
+<li><p>如果版本号在21以下</p>
+<p>  <strong>NativeLibraryHelper</strong></p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinariesIfNeededLI(<span class="built_in">File</span> apkFile, <span class="built_in">File</span> sharedLibraryDir) &#123;</div><div class="line">       final <span class="keyword">String</span> cpuAbi = Build.CPU_ABI;</div><div class="line">       final <span class="keyword">String</span> cpuAbi2 = Build.CPU_ABI2;</div><div class="line">       <span class="built_in">return</span> nativeCopyNativeBinaries(apkFile.getPath(), sharedLibraryDir.getPath(), cpuAbi,</div><div class="line">               cpuAbi2);</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+</li>
 </ul>
-<pre><code>      会去反射调用这个方法，其中系统会自动判断出 primaryAbi 和 secondAbi。
-
-* 如果版本号在21以上
-`copyNativeBinariesIfNeededLI(file, file)`这个方法已经被废弃了，需要去反射调用这个方法
-
-    **NativeLibraryHelper**
-
-    <figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinaries(Handle handle, <span class="built_in">File</span> sharedLibraryDir, <span class="keyword">String</span> abi) &#123;</div><div class="line">       <span class="built_in">for</span> (<span class="keyword">long</span> apkHandle : handle.apkHandles) &#123;</div><div class="line">           <span class="keyword">int</span> res = nativeCopyNativeBinaries(apkHandle, sharedLibraryDir.getPath(), abi,</div><div class="line">                   handle.extractNativeLibs, HAS_NATIVE_BRIDGE);</div><div class="line">           <span class="built_in">if</span> (res != INSTALL_SUCCEEDED) &#123;</div><div class="line">               <span class="built_in">return</span> res;</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">       <span class="built_in">return</span> INSTALL_SUCCEEDED;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
-
-
-    所以首先得去获得一个`NativeLibraryHelper$Handle`类的实例。之后就是找 primaryAbi。Amigo 先对机器的位数做了判断，如果是64位的机子，就只找64位的 abi，如果是32位的，就只找32位的 abi。然后将 Handle 实例当做参数去调用`NativeLibraryHelper`的`findSupportedAbi`来获得primaryAbi。最后再去调用`copyNativeBinaries`去拷贝 so 文件。
-
-对于 so 文件加载的原理可以参考[这篇文章](http://mp.weixin.qq.com/s?__biz=MzA3NTYzODYzMg==&amp;mid=2653577702&amp;idx=1&amp;sn=1288c77cd8fc2db68dc92cf18d675ace&amp;scene=4#wechat_redirect)
-</code></pre><ul>
+<p>会去反射调用这个方法，其中系统会自动判断出 primaryAbi 和 secondAbi。</p>
+<ul>
+<li><p>如果版本号在21以上  </p>
+<p><code>copyNativeBinariesIfNeededLI(file, file)</code>这个方法已经被废弃了，需要去反射调用这个方法</p>
+<p><strong>NativeLibraryHelper</strong></p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> copyNativeBinaries(Handle handle, <span class="built_in">File</span> sharedLibraryDir, <span class="keyword">String</span> abi) &#123;</div><div class="line">       <span class="built_in">for</span> (<span class="keyword">long</span> apkHandle : handle.apkHandles) &#123;</div><div class="line">           <span class="keyword">int</span> res = nativeCopyNativeBinaries(apkHandle, sharedLibraryDir.getPath(), abi,</div><div class="line">                   handle.extractNativeLibs, HAS_NATIVE_BRIDGE);</div><div class="line">           <span class="built_in">if</span> (res != INSTALL_SUCCEEDED) &#123;</div><div class="line">               <span class="built_in">return</span> res;</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">       <span class="built_in">return</span> INSTALL_SUCCEEDED;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<p>所以首先得去获得一个<code>NativeLibraryHelper$Handle</code>类的实例。之后就是找 primaryAbi。Amigo 先对机器的位数做了判断，如果是64位的机子，就只找64位的 abi，如果是32位的，就只找32位的 abi。然后将 Handle 实例当做参数去调用<code>NativeLibraryHelper</code>的<code>findSupportedAbi</code>来获得primaryAbi。最后再去调用<code>copyNativeBinaries</code>去拷贝 so 文件。</p>
+<p>对于 so 文件加载的原理可以参考<a href="http://mp.weixin.qq.com/s?__biz=MzA3NTYzODYzMg==&amp;mid=2653577702&amp;idx=1&amp;sn=1288c77cd8fc2db68dc92cf18d675ace&amp;scene=4#wechat_redirect" target="_blank" rel="external">这篇文章</a></p>
+<ul>
 <li><p>优化 dex 文件</p>
 <p>  <strong>ApkReleaseActivity.java</strong></p>
   <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">dexOptimization</span><span class="params">()</span> </span>&#123;</div><div class="line">	...</div><div class="line">       <span class="keyword">for</span> (File dex : validDexes) &#123;</div><div class="line">           <span class="keyword">new</span> DexClassLoader(dex.getAbsolutePath(), optimizedDir.getAbsolutePath(), <span class="keyword">null</span>, DexUtils.getPathClassLoader());</div><div class="line">           Log.e(TAG, <span class="string">"dexOptimization finished--&gt;"</span> + dex);</div><div class="line">       &#125;</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
 </li>
 </ul>
-<pre><code>DexClassLoader 没有做什么事情，只是调用了父类构造器，他的父类是 BaseDexClassLoader。在 BaseDexClassLoader 的构造器中又去构造了一个DexPathList 对象。
-在`DexPathList`类中，有一个 Element 数组
-
-**DexPathList**
-
+<p>DexClassLoader 没有做什么事情，只是调用了父类构造器，他的父类是 BaseDexClassLoader。在 BaseDexClassLoader 的构造器中又去构造了一个DexPathList 对象。<br>    在<code>DexPathList</code>类中，有一个 Element 数组</p>
+<p><strong>DexPathList</strong></p>
 <figure class="highlight crystal"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">/** list <span class="keyword">of</span> dex/resource (<span class="class"><span class="keyword">class</span> <span class="title">path</span>) <span class="title">elements</span> */</span></div><div class="line"><span class="keyword">private</span> final Element[] dexElements;</div></pre></td></tr></table></figure>
-
-Element 就是对 Dex 的封装。所以一个 Element 对应一个 Dex。这个 Element 在后文中会提到。
-</code></pre><p>  优化 dex 只需要在构造 DexClassLoader 对象的时候将 dex 的路径传进去，系统会在最后会通过<code>DexFile</code>的</p>
+<p>Element 就是对 Dex 的封装。所以一个 Element 对应一个 Dex。这个 Element 在后文中会提到。</p>
+<p>  优化 dex 只需要在构造 DexClassLoader 对象的时候将 dex 的路径传进去，系统会在最后会通过<code>DexFile</code>的</p>
 <p>  <strong>DexFile.java</strong></p>
   <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">native</span> <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">openDexFile</span><span class="params">(String sourceName, String outputName,</span></span></div><div class="line">      <span class="keyword">int</span> flags) <span class="keyword">throws</span> IOException;</div></pre></td></tr></table></figure>
 <p>   来这个方法来加载 dex，加载的同时会对其做优化处理。</p>
