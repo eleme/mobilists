@@ -59,7 +59,7 @@ RAC中最核心的类RACSignal，是一系列可以被监测的数据流。
 {% endcodeblock %}
 以上的代码通过对原始信号的处理（filter,throttle），生成了一下新的信号，过滤了输入字符长度小于等于2，同时在一定500毫秒内，不接收任何信号内容，过了500毫秒才获取最后发送的信号内容发出。
 # Implementation
-当然由于block的循环引用，我们必须像往常一样使用weakSelf，strongSelf。RAC在RACEXTScope.h中定义了 `@weakify()` 和 `@strongify()` 来方便我们使用。`@weakify()`实际上定义了一个_weak的`self_weak_` 变量，而`@strongify()`则在block定义了一个指向`self_weak_`的_strong的self指针。最终代码：
+当然由于block的循环引用，我们必须像往常一样使用weakSelf，strongSelf。RAC在RACEXTScope.h中定义了 `@weakify()` 和 `@strongify()` 来方便我们使用。`@weakify()`实际上定义了一个_weak的`self_weak_` 变量,而`@strongify()`则在block定义了一个指向`self_weak_`的_strong的self指针。最终代码：
 
 {% codeblock "Final Code" lang:objectivec %}
   @weakify(self);
