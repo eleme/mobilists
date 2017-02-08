@@ -660,11 +660,15 @@ pre .javascript .function {
   margin-top: 4px;
   margin-left: 4px;
 }
-#menu-inner {
+#eleme-menu-wrapper {
+  max-width: 960px;
+  margin: auto;
+}
+#eleme-menu-wrapper #menu-inner {
   float: right;
   margin-top: 10px;
 }
-#menu-inner a {
+#eleme-menu-wrapper #menu-inner a {
   text-decoration: none;
   color: #fff;
   font-size: 16px;
@@ -751,63 +755,63 @@ pre .javascript .function {
   height: 44px;
   width: 100%;
 }
-.prev-post {
+.pagination-indicator .prev-post {
   float: left;
   margin-left: 8px;
   margin-top: 12px;
-  color: #3190e8;
+  color: eleme-lin;
 }
 @media screen and (max-width: 640px) {
-  .prev-post {
+  .pagination-indicator .prev-post {
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 }
-.next-post {
+.pagination-indicator .next-post {
   float: right;
   margin-top: 12px;
   margin-right: 8px;
   color: #3190e8;
 }
 @media screen and (max-width: 640px) {
-  .next-post {
+  .pagination-indicator .next-post {
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 }
-.page-number {
+.pagination-indicator .page-number {
   color: #666;
   width: 100%;
   margin: 0 auto;
   text-align: center;
   padding-top: 12px;
 }
-.next-page {
+.pagination-indicator .next-page {
   float: right;
   margin-top: 12px;
   margin-right: 8px;
   color: #3190e8;
 }
 @media screen and (max-width: 640px) {
-  .next-page {
+  .pagination-indicator .next-page {
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 }
-.prev-page {
+.pagination-indicator .prev-page {
   float: left;
   margin-left: 8px;
   margin-top: 12px;
   color: #3190e8;
 }
 @media screen and (max-width: 640px) {
-  .prev-page {
+  .pagination-indicator .prev-page {
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -863,8 +867,11 @@ pre {
   overflow-x: scroll;
   background: #eee;
 }
+pre::-webkit-scrollbar {
+  display: none;
+}
 pre code {
-  line-height: 28px;
+  line-height: 1.8;
 }
 code {
   font-family: "Source Code Pro", Consolas, Monaco, Menlo, Consolas, monospace;
@@ -885,10 +892,17 @@ code {
   padding: 8px;
   border-radius: 4px;
 }
+@media screen and (max-width: 640px) {
+  .post-wrapper figure {
+    margin: 0 auto;
+    max-width: 90%;
+  }
+}
 .post-wrapper figure figcaption {
   color: #ff6000;
 }
 .post-wrapper figure pre {
+  overflow: hidden;
   background: transparent;
 }
 .archive-categories,
