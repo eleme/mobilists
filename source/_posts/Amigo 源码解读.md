@@ -1,14 +1,12 @@
-
 title: Amigo 源码解读
-date: 2016-09-01 17:18:09
 author: canaan
 tags:
-- Android
-- Amigo
-- Hotfix
+  - Android
+  - Amigo
+  - Hotfix
 category: Android
+date: 2016-09-01 17:18:09
 ---
-
 # Amigo 源码解读
 现在 hotfix 框架有很多，原理大同小异，基本上是基于[qq空间这篇文章](https://mp.weixin.qq.com/s?__biz=MzI1MTA1MzM2Nw==&mid=400118620&idx=1&sn=b4fdd5055731290eef12ad0d17f39d4a) 或者[微信的方案](http://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&mid=2649286306&idx=1&sn=d6b2865e033a99de60b2d4314c6e0a25&scene=1&srcid=0811AOttpqUnh1Wu5PYcXbnZ#rd)。可惜的是微信的 Tinker 以及 QZone 都没有将其具体实现开源出来，只是在文章中分析了现有各个 hotfix 框架的优缺点以及他们的实现方案。Amigo 原理与 Tinker 基本相同，但是在 Tinker 的基础上，进一步实现了 so 文件、资源文件、Activity、BroadcastReceiver 的修复，几乎可以号称全面修复，不愧 Amigo（朋友）这个称号，能在危急时刻送来全面的帮助。
 
@@ -149,27 +147,27 @@ protected void onCreate(Bundle savedInstanceState) {
 * 拷贝 so 文件到 Amigo 的指定目录下
   拷贝 so 文件是通过反射去调用 `NativeLibraryHelper`这个类的`nativeCopyNativeBinaries()`方法，但这个方法在不同版本上有不同的实现。
   
-  	* 如果版本号在21以下
+  * 如果版本号在21以下
   	
-  		**NativeLibraryHelper**
+  	**NativeLibraryHelper**
   	
-		```
+    ```
 		public static int copyNativeBinariesIfNeededLI(File apkFile, File sharedLibraryDir) {
 	        final String cpuAbi = Build.CPU_ABI;
 	        final String cpuAbi2 = Build.CPU_ABI2;
 	        return nativeCopyNativeBinaries(apkFile.getPath(), sharedLibraryDir.getPath(), cpuAbi,
 	                cpuAbi2);
 	    }
-		```
-		
-  		会去反射调用这个方法，其中系统会自动判断出 primaryAbi 和 secondAbi。
+	```
+ 会去反射调用这个方法，其中系统会自动判断出 primaryAbi 和 secondAbi。
 
-	* 如果版本号在21以上
+ * 如果版本号在21以上  
+ 
 	`copyNativeBinariesIfNeededLI(file, file)`这个方法已经被废弃了，需要去反射调用这个方法
 
-		**NativeLibraryHelper**
+	**NativeLibraryHelper**
 
-		```
+	```
 		public static int copyNativeBinaries(Handle handle, File sharedLibraryDir, String abi) {
 	        for (long apkHandle : handle.apkHandles) {
 	            int res = nativeCopyNativeBinaries(apkHandle, sharedLibraryDir.getPath(), abi,
@@ -181,10 +179,9 @@ protected void onCreate(Bundle savedInstanceState) {
 	        return INSTALL_SUCCEEDED;
 	    }
 		```
-	
-		所以首先得去获得一个`NativeLibraryHelper$Handle`类的实例。之后就是找 primaryAbi。Amigo 先对机器的位数做了判断，如果是64位的机子，就只找64位的 abi，如果是32位的，就只找32位的 abi。然后将 Handle 实例当做参数去调用`NativeLibraryHelper`的`findSupportedAbi`来获得primaryAbi。最后再去调用`copyNativeBinaries`去拷贝 so 文件。
+所以首先得去获得一个`NativeLibraryHelper$Handle`类的实例。之后就是找 primaryAbi。Amigo 先对机器的位数做了判断，如果是64位的机子，就只找64位的 abi，如果是32位的，就只找32位的 abi。然后将 Handle 实例当做参数去调用`NativeLibraryHelper`的`findSupportedAbi`来获得primaryAbi。最后再去调用`copyNativeBinaries`去拷贝 so 文件。
 		
-	对于 so 文件加载的原理可以参考[这篇文章](http://mp.weixin.qq.com/s?__biz=MzA3NTYzODYzMg==&mid=2653577702&idx=1&sn=1288c77cd8fc2db68dc92cf18d675ace&scene=4#wechat_redirect)
+对于 so 文件加载的原理可以参考[这篇文章](http://mp.weixin.qq.com/s?__biz=MzA3NTYzODYzMg==&mid=2653577702&idx=1&sn=1288c77cd8fc2db68dc92cf18d675ace&scene=4#wechat_redirect)
 	
 * 优化 dex 文件
 	
@@ -200,17 +197,18 @@ protected void onCreate(Bundle savedInstanceState) {
     }
 	```
 	
-	DexClassLoader 没有做什么事情，只是调用了父类构造器，他的父类是 BaseDexClassLoader。在 BaseDexClassLoader 的构造器中又去构造了一个DexPathList 对象。
+DexClassLoader 没有做什么事情，只是调用了父类构造器，他的父类是 BaseDexClassLoader。在 BaseDexClassLoader 的构造器中又去构造了一个DexPathList 对象。
 	在`DexPathList`类中，有一个 Element 数组
 	
-	**DexPathList**
+**DexPathList**
 
-	```
+
+```
 	/** list of dex/resource (class path) elements */
 	private final Element[] dexElements;
-	```
+```
 
-	Element 就是对 Dex 的封装。所以一个 Element 对应一个 Dex。这个 Element 在后文中会提到。
+Element 就是对 Dex 的封装。所以一个 Element 对应一个 Dex。这个 Element 在后文中会提到。
 
   优化 dex 只需要在构造 DexClassLoader 对象的时候将 dex 的路径传进去，系统会在最后会通过`DexFile`的
   
@@ -460,6 +458,3 @@ gradle支持|yes|yes|yes|no|no
 接口文档|丰富|丰富|一般|一般|较少
 占Rom体积|较大|较大|较小|较小|较小
 成功率|100%|较好|很高|一般|一般
-
-
-
