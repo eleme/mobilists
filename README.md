@@ -2,7 +2,10 @@
 
 Blog for Eleme mobile team.
 
-We're using [Hexo](https://hexo.io/).
+We're using [Hexo](https://hexo.io/).  
+
+## Requirements  
+- node.js > 6.0
 
 ## First Time Checkout
 
@@ -25,8 +28,13 @@ Then cd the project foler:
 ```
 npm install
 ```
-
-Then start writing following documentation on [Hexo](https://hexo.io/docs).
+## View Admin UI  
+in mobilists folder run  
+ 
+```
+make start  
+```
+then view Admin at `localhost:8090`
 
 ### PlantUML
 

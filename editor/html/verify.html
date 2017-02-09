@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>饿了么移动组博客后台</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    .wrapper {
+      width: 30%;
+      margin: auto;
+    }
+    input {
+      outline: none;
+      border: 1px solid #eeeeee;
+      height: 44px;
+      font-size: 1.2em;
+      border-radius: 4px;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    input:focus {
+      border: 1px solid #3190e8;
+    }
+    .submit {
+      width: 100%;
+      line-height: 32px;
+      background: #3190e8;
+      display: block;
+      text-align: center;
+      color: white;
+      padding-left: 8px;
+      padding-right: 8px;
+      border-radius: 4px;
+      margin-top: 32px;
+    }
+    .submit:hover {
+      box-shadow: 1px 1px 5px #999;
+      cursor: pointer;
+    }
+    .submit:active, .submit:disabled {
+      background: #999999;
+    }
+    .global-modal {
+      display: none;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      background: rgba(0,0,0,0.4);
+      margin: 0;
+    }
+    .load-wrapper {
+      width: 64px;
+      height: 64px;
+      overflow: hidden;
+      margin: auto;
+      margin-top: 240px;
+      animation-name: rotateAnimation;
+      animation-duration: 0.9s;
+      animation-iteration-count: infinite;
+      animation-timing-function: linear;
+    }
+    @keyframes rotateAnimation {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #load-indicator {
+    }
+  </style>
+</head>
+<body>
+  <div class="global-modal">
+      <div class="load-wrapper" id="load-wrapper">
+        <img id="load-indicator" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAADACAMAAACDB5U0AAAAMFBMVEUAAAD///////////////////////////////////////////////////////////87TQQwAAAAEHRSTlMAUQwWSGr/BSODz+iYN7ioo0T1UwAABSpJREFUeNrtmouSozgMRbFlYfn9/387FoaIJFAYU7s7W5Vb3ZOkMzrIliD2JdNPf79UCOpJPMxV8ABADKC7UakUOgLolHRPvPbz7OEbYI1SxvaMO4Qwu28AqUroAdg4VwR9ArSqgNQ3c5xC+QQkVaWnLrm5Esw7ADi+obqmMczZvgGMMjyFnVKcAu4B1JOAlZbLNQUPAtDmbQaPM0nZO9qecwqutXKAtYTwaihz1FG2BB88ru8spYTtZLK7ElqqLJWOAd6HrNZS1nZkGEBrwq2EwP3ItKMhBM+IuLxpciF5D4yB5ZG7gWlwWD3nlyS8g5NZ3sJPT6oUQ0McZNiyZyWYzmXaTBR7cHzDg1eGLpoBawIhHgOq6LobwflCx0OQwV8g7El2HeHjApGeTmX1Sx9ZmiwqUsSTQrLMezHzTl5qcFAHIQwCzOvno4G6hqBOhzDpgUn85wRndNsXjtEdn+7J0DVCq1hixtMa0EV8cqXEWE4A5upqQC28HA8Brq5HgLGG19+jj0C5Ip6Og1p4QVpeIb7SkLUFmbWLjj4XXMs+rVeVGNHyn+3b2sJS6+N0DChx+/zE6BwDQCng0lTRlgy/SIczGBW8njsXTaUiInOSMpI2JHl+csWyWAFYX2pE5Ed4P+rliWBiBaRJAG19AlOntKvCSQDy+d4nxQnQDtC7wtjPoJreAbZrjSMz6GAPuLfKAk4gTZ+AKfWmoFsTfgE0V7IDIKeBAJpAlkZ9EsCAngNkODT99NNPz2W8N0/iQTbiY6JQRbejYqQPgPgKHdI5hKy/AdA2ctcC3vPgNyD2+inWhYqgTwBxfOm7rHMK8ROQb/gxGCrBvAMUxzO1bxrXnZ8ArG/b8E4pTkHtAcgJYL9/wDv5DALgEs7+YtFNJeOrZ3ge3Vp7WEtoLvyD6LPPuL6zlFJvJxMsJTz1DwTA+yWzdlMIhWF6+YdHQFf+ARWfGeFSa/xIb2e16vAPMC9JZISDNWSXf0CuJVFo2D9I60w88A9U8dm7R/4B5vi/9A/0U/8g7kQD/kEsEl9cp39wDhjwD1IUOXroH9j/3j/Q0zP/QDnUD/wD46KLatw/wMg7nmH/AB0r4ph/oJVbDu9G/YMaykJaN5r6pn+wjr7RAdHJTF74BwKIbtvXGURUtvnB3f4BOvEPsCrJoW/7B6ol0A494B8krKJJAHf9A45XkwDu+geGASCAu/4BcLyZBNDnH4gUA7QAbvsHrYQCuO0ftBIK4L5/IH0igBH/QACjklYeFxnz8w9++umR5P6TGQ6Wjfi4yFfR7SjnthhgAMhasouli/dF7wFih3QNB3jPg98A125Fd2jZedEOIF8qiH2XdU7BfQLK3O/HIKeQ3gGm3Y3vky4VEO0eYJfvA+h+/ypnr/YA5ATUJLrYlMVKKCCNBKEmkKVQJ/0jK9S0llL71sqOE0gvoypkOrtNpLTMY9HbyQRLCTfzn72AfHmjKnsfxT+oTbiWUPmZ5Y9vlTUEtcZfHmVIpj3Oi4I5vdVYERH1d35LUePcdGrKEZaGOPwPKbRwr65vWLqjBH3LHu2Ff1ATKHgKiDB+09aEuaS+c8GeoOlv9g+S22nEP3B7YZ9/cAqIOOIfOBH+/AMwqB74BzZhlRn2D0hxvDOj/oHCRWrQPzDYlOyYf4BN29e30l3/QLXsSbZoN/0DJdnLJvGOfwAKk943PT3wDwwHPPAPSFWN+gdiFgz6B3K4Qf9ABjziH0gJh/0DKfq4f8C1f+QfQEo//+Cnf1t/AFGZQwaktm6jAAAAAElFTkSuQmCC">
+      </div>
+  </div>
+<h1 style="text-align: center; margin-top: 128px">在开始创作前，先来完善一下你的信息吧</h1>
+<div style="margin-top: 64px">
+  <div class="wrapper">
+    <img src="img/github.jpeg" style="width: 64px; display: block; margin: auto; margin-bottom: 16px; border-radius: 50%" id="github_avatar">
+    <input type="text" placeholder="你的Github ID" style="display: block; width: 100%;" id="github_id">
+    <a class="submit" onclick="confirm_id()" id="confirm">确认</a>
+    <a class="submit" onclick="no_github()" id="no_github" style="background: #999999">我没有Github ID</a>
+    <a class="submit" onclick="confirm_isme()" style="display: none" id="isme">这是我</a>
+    <a class="submit" onclick="confirm_notme()" style="display: none; background: #999999" id="notme">这不是我</a>
+  </div>
+</div>
+<p style="text-align: center; font-size: 12px; position: fixed; bottom: 0; display: none; width: 100%" id="github_shame">没有github太丢人了</p>
+<script src="scripts/jquery.min.js"></script>
+<script>
+  function showloading() {
+    $('.global-modal').show()
+  }
+
+  function dismissloading() {
+    $('.global-modal').hide()
+  }
+  
+  function confirm_id() {
+    var github = $('#github_id').val()
+    if (!github || github.length == 0) {
+      alert('Github ID 不可以为空')
+      $('#github_shame').show()
+    } else {
+      $('#github_id').attr('disabled', true)
+      showloading()
+      $.ajax({
+        url: '/github/' + github,
+        method: 'get',
+        success: function (data) {
+          dismissloading()
+          setAvatar(data.avatar)
+          $('#confirm').hide();
+          $('#no_github').hide();
+          $('#isme').show();
+          $('#notme').show();
+        },
+        error: function (msg) {
+          alert('没找到!')
+          location.reload()
+        }
+      })
+    }
+  }
+  var avatar_url = ''
+  function setAvatar(url) {
+    avatar_url = url
+    $('#github_avatar').attr("src", url)
+  }
+
+  function confirm_isme() {
+    $.ajax({
+      url: '/github/confirm',
+      method: 'post',
+      data: {
+        'avatar': avatar_url,
+        'github_id': $('#github_id').val()
+      },
+      success: function (data) {
+        location.href='index.html'
+      },
+      error: function (msg) {
+        alert('未能完成操作')
+      }
+    })
+  }
+  
+  function confirm_notme() {
+    location.reload()
+  }
+  
+  function no_github() {
+    alert('没有Github你还是别写了吧')
+    $('#github_shame').show()
+  }
+</script>
+</body>
+</html>
