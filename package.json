@@ -6,6 +6,9 @@
     "version": "3.2.2"
   },
   "dependencies": {
+    "body-parser": "^1.16.0",
+    "cheerio": "^0.22.0",
+    "express": "^4.14.1",
     "hexo": "~x",
     "hexo-admin": "~x",
     "hexo-deployer-git": "~x",
@@ -18,6 +21,9 @@
     "hexo-renderer-marked": "~x",
     "hexo-renderer-stylus": "~x",
     "hexo-server": "~x",
-    "hexo-tag-plantuml": "~x"
+    "hexo-tag-plantuml": "~x",
+    "js-yaml": "^3.8.1",
+    "line-by-line": "^0.1.5",
+    "superagent": "^3.4.1"
   }
 }
