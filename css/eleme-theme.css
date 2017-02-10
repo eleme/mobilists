@@ -718,12 +718,12 @@ pre .javascript .function {
   border-bottom: 1px #eee solid;
   margin-right: 8px;
 }
-#recent-posts .release {
+.release {
   font-size: 11px;
   color: #999;
   display: inline-block;
 }
-#recent-posts .author {
+.author {
   display: inline-block;
   font-size: 11px;
   color: #999;
