@@ -4,11 +4,13 @@
 var child = require('child_process'),
     fs = require('fs'),
     yaml = require('js-yaml')
-
+var server = null
 module.exports = {
   hexo_server: function () {
-    var server = child.spawn('hexo', ['s'])
-    return server.pid
+    if (server == null) {
+      server = child.spawn('hexo', ['s'])
+    }
+    return server
   },
   hexo_new_post: function (postname) {
     var dir = `${__dirname}/../../source/_posts/${postname}.md`
