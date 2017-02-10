@@ -316,7 +316,7 @@
     <link href="http://mobilists.eleme.io/2016/08/26/terminator/"/>
     <id>http://mobilists.eleme.io/2016/08/26/terminator/</id>
     <published>2016-08-26T04:00:00.000Z</published>
-    <updated>2017-02-07T09:21:46.000Z</updated>
+    <updated>2017-02-09T08:13:33.000Z</updated>
     
     <content type="html"><![CDATA[<h2 id="Amigo"><a href="#Amigo" class="headerlink" title="Amigo"></a>Amigo</h2><p><img src="http://amigotheband.com/wp-content/uploads/2015/02/logo_amigo-yellow.png" alt="amigo.png">  </p>
 <p>An old Chinese saying goes: <strong>Road to Jane</strong></p>
@@ -434,7 +434,7 @@
     <link href="http://mobilists.eleme.io/2016/04/12/ReactiveCocoa%E5%AE%9E%E8%B7%B5/"/>
     <id>http://mobilists.eleme.io/2016/04/12/ReactiveCocoa实践/</id>
     <published>2016-04-12T03:57:32.000Z</published>
-    <updated>2017-02-08T06:10:59.000Z</updated>
+    <updated>2017-02-09T08:13:30.000Z</updated>
     
     <content type="html"><![CDATA[<p>ReactiveCocoa(以下简称RAC)是iOS上函数响应式编程（Functional Reactive Programming，FRP）的框架，这个和我们平时面向对象（OOP）的编程方式有挺大的区别。本文通过在项目中使用RAC来实现一个小功能，让大家了解一下RAC。</p>
 <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>有一个需求，在搜索页搜索时，需要先判断输入内容是否合法（2个字符以上），同时需要500毫秒的延迟，减少用户输入过程中频繁发起请求。这个功能非常适合用RAC来实现。FRP的核心是信号（signal），而输入框文本变化实质是一种信号，我们可以通过对信号的处理来完成这个功能。</p>
