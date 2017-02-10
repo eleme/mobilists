@@ -39,7 +39,7 @@ relative_link: false
 future: true
 highlight:
   enable: true
-  line_number: true
+  line_number: false
   auto_detect: true
   tab_replace:
 
@@ -83,3 +83,22 @@ deploy:
   type: git
   repo: git@github.com:eleme/mobilists.git
   branch: gh-pages
+
+multiauthor:
+  default_avatar: ''
+  authors:
+    - axl411:
+        displayname: 'chao.gu'
+        avatar: 'https://avatars0.githubusercontent.com/u/5897680?v=3&s=400'
+    - canaan:
+        displayname: 'jianan.ye'
+    - JackCho:
+        displayname: 'amigo'
+    - zhungxd:
+        displayname: 'xiaodong.zhang'
+    - PhilCai:
+        displayname: 'zheren.cai'
+        avatar: 'https://avatars0.githubusercontent.com/u/6828315?v=3&s=400'
+    - stephenwzl:
+        displayname: 'zhilong.wang'
+        avatar: 'https://avatars3.githubusercontent.com/u/10472240?v=3&s=460'
