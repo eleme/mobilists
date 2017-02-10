@@ -893,6 +893,7 @@ code {
   overflow: auto;
   padding: 8px;
   border-radius: 4px;
+  font-size: 12px;
 }
 @media screen and (max-width: 640px) {
   .post-wrapper figure {
