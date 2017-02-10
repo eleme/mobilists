@@ -53,7 +53,9 @@ app.post('/post/update/:postname', (req, res) => {
 })
 
 
-console.log('hexo server is running on port:4000 and pid is: ' + require('./hexo-runtime').hexo_server())
 app.listen(8090, () => {
   console.log('Editor is running on http://localhost:8090')
+  require('./hexo-runtime').hexo_server().stdout.on('data', data => {
+    console.log('hexo server stdout: '+ data)
+  })
 })

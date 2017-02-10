@@ -1,37 +1,25 @@
-# Hexo Configuration
-## Docs: http://hexo.io/docs/configuration.html
-## Source: https://github.com/hexojs/hexo/
-
-# Site
 title: Eleme Mobilists
-subtitle: 
-description:
-author: 
+subtitle: null
+description: null
+author: null
 language: zh-Hans
 timezone: Asia/Shanghai
-
-# URL
-## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://mobilists.eleme.io
+url: 'http://mobilists.eleme.io'
 root: /
-permalink: :year/:month/:day/:title/
-permalink_defaults:
-
-# Directory
+permalink: ':year/:month/:day/:title/'
+permalink_defaults: null
 source_dir: source
 public_dir: public
 tag_dir: tags
 archive_dir: archives
 category_dir: categories
 code_dir: downloads/code
-i18n_dir: :lang
-skip_render:
-
-# Writing
-new_post_name: :title.md # File name of new posts
+i18n_dir: ':lang'
+skip_render: null
+new_post_name: ':title.md'
 default_layout: post
-titlecase: false # Transform title into titlecase
-external_link: true # Open external links in new tab
+titlecase: false
+external_link: true
 filename_case: 0
 render_drafts: false
 post_asset_folder: true
@@ -41,32 +29,19 @@ highlight:
   enable: true
   line_number: false
   auto_detect: true
-  tab_replace:
-
-# Category & Tag
+  tab_replace: null
 default_category: uncategorized
-category_map:
-tag_map:
-
-# Date / Time format
-## Hexo uses Moment.js to parse and display date
-## You can customize the date format as defined in
-## http://momentjs.com/docs/#/displaying/format/
+category_map: null
+tag_map: null
 date_format: YYYY-MM-DD
-time_format: HH:mm:ss
-
-# Pagination
-## Set per_page to 0 to disable pagination
+time_format: 'HH:mm:ss'
 per_page: 10
 pagination_dir: page
-
-# Extensions
-## Plugins: http://hexo.io/plugins/
 feed:
   type: atom
   path: atom.xml
   limit: 20
-  hub:
+  hub: null
 category_generator:
   per_page: 10
 archive_generator:
@@ -74,16 +49,11 @@ archive_generator:
   yearly: true
   monthly: true
   daily: false
-## Themes: http://hexo.io/themes/
 theme: next
-
-# Deployment
-## Docs: http://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: git@github.com:eleme/mobilists.git
+  repo: 'git@github.com:eleme/mobilists.git'
   branch: gh-pages
-
 multiauthor:
   default_avatar: ''
   authors:
@@ -91,14 +61,17 @@ multiauthor:
         displayname: 'axl411'
         avatar: 'https://avatars0.githubusercontent.com/u/5897680?v=3&s=400'
     - canaan:
-        displayname: 'jianan.ye'
+        displayname: jianan.ye
     - JackCho:
-        displayname: 'amigo'
+        displayname: amigo
     - zhungxd:
-        displayname: 'xiaodong.zhang'
+        displayname: xiaodong.zhang
     - PhilCai:
-        displayname: 'zheren.cai'
+        displayname: zheren.cai
         avatar: 'https://avatars0.githubusercontent.com/u/6828315?v=3&s=400'
     - stephenwzl:
-        displayname: 'zhilong.wang'
+        displayname: stephenwzl
         avatar: 'https://avatars3.githubusercontent.com/u/10472240?v=3&s=460'
+    - BryanOne:
+        displayname: BryanOne
+        avatar: 'https://avatars1.githubusercontent.com/u/1538965?v=3&s=460'
