@@ -1,7 +1,9 @@
 const fs = require('fs'),
       path = require('path'),
       superagent = require('superagent'),
-      cheerio = require('cheerio')
+      cheerio = require('cheerio'),
+      yaml = require('js-yaml')
+
 module.exports = {
   user: function () {
     var currentuser = fs.existsSync(`${__dirname}/currentuser.json`)
@@ -19,7 +21,8 @@ module.exports = {
       user[key] = info[key]
     })
     user['valid'] = true
-    return fs.writeFileSync(`${__dirname}/currentuser.json`, JSON.stringify(user))
+    fs.writeFileSync(`${__dirname}/currentuser.json`, JSON.stringify(user))
+    this.updateSiteMultiUser(info)
   },
   avatar: function (github_id) {
     return superagent.get(`https://github.com/${github_id}`)
@@ -39,5 +42,39 @@ module.exports = {
           }
         })
       })
+  },
+  updateSiteMultiUser: function (info) {
+    var dir = `${__dirname}/../../_config.yml`
+    var content = fs.readFileSync(dir)
+    var config = yaml.safeLoad(content)
+    var users = config.multiauthor.authors
+    var finded = false
+    var newusers = users.map(user => {
+      var userid = Object.keys(user)[0]
+      if (userid == info.github_id) {
+        finded = true
+        var newuser = {}
+        newuser[userid] = {
+          'displayname': user[userid].displayname,
+          'avatar': info.avatar
+        };
+        return newuser
+      } else {
+        return user
+      }
+    })
+    if (!finded) {
+      var userid = info.github_id
+      var newuser = {}
+      newuser[userid] = {
+        'displayname': userid,
+        'avatar': info.avatar
+      };
+      newusers.push(newuser)
+    }
+    config.multiauthor.authors = newusers
+    fs.writeFileSync(dir, yaml.safeDump(config, {
+      'noCompatMode': true
+    }))
   }
 }
