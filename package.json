@@ -20,6 +20,7 @@
     "hexo-renderer-ejs": "~x",
     "hexo-renderer-marked": "~x",
     "hexo-renderer-stylus": "~x",
+    "hexo-generator-multiauthor":"1.0.0",
     "hexo-server": "~x",
     "hexo-tag-plantuml": "~x",
     "js-yaml": "^3.8.1",
