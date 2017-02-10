@@ -5,26 +5,10 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://mobilists.eleme.io/"/>
-  <updated>2017-02-10T07:22:18.000Z</updated>
+  <updated>2017-02-07T09:21:46.000Z</updated>
   <id>http://mobilists.eleme.io/</id>
   
   <generator uri="http://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>tester01</title>
-    <link href="http://mobilists.eleme.io/2017/02/10/tester01/"/>
-    <id>http://mobilists.eleme.io/2017/02/10/tester01/</id>
-    <published>2017-02-10T07:22:18.000Z</published>
-    <updated>2017-02-10T07:22:18.000Z</updated>
-    
-    <summary type="html">
-    
-    </summary>
-    
-      <category term="iOS" scheme="http://mobilists.eleme.io/categories/iOS/"/>
-    
-    
-  </entry>
   
   <entry>
     <title>使用链式调用解决多可选参数接口设计问题</title>
