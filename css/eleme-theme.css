@@ -752,8 +752,10 @@ pre .javascript .function {
 .pagination-number {
   height: 44px;
   width: 100%;
+  line-height: 44px;
 }
 .pagination-indicator {
+  margin-top: -44px;
   height: 44px;
   width: 100%;
 }
@@ -893,7 +895,6 @@ code {
   overflow: auto;
   padding: 8px;
   border-radius: 4px;
-  font-size: 12px;
 }
 @media screen and (max-width: 640px) {
   .post-wrapper figure {
