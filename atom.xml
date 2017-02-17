@@ -737,7 +737,7 @@
     <link href="http://mobilists.eleme.io/2016/01/10/%E7%AA%81%E7%A0%B4%E5%BE%AE%E4%BF%A1%E8%B7%B3%E8%BD%AC%E9%99%90%E5%88%B6%EF%BC%8DUniversal-Links%E9%82%A3%E4%BA%9B%E5%9D%91/"/>
     <id>http://mobilists.eleme.io/2016/01/10/突破微信跳转限制－Universal-Links那些坑/</id>
     <published>2016-01-10T13:43:29.000Z</published>
-    <updated>2017-02-10T10:07:47.000Z</updated>
+    <updated>2017-02-10T10:28:32.000Z</updated>
     
     <content type="html"><![CDATA[<p>微信屏蔽了在其内部webview中大部分URL Scheme跳转（除了一个白名单比如点评），目前突破这个限制有两种方案</p>
 <ul>
