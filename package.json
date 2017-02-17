@@ -16,15 +16,16 @@
     "hexo-generator-category": "~x",
     "hexo-generator-feed": "^1.2.0",
     "hexo-generator-index": "~x",
+    "hexo-generator-multiauthor": "1.0.0",
     "hexo-generator-tag": "~x",
     "hexo-renderer-ejs": "~x",
     "hexo-renderer-marked": "~x",
     "hexo-renderer-stylus": "~x",
-    "hexo-generator-multiauthor":"1.0.0",
     "hexo-server": "~x",
     "hexo-tag-plantuml": "~x",
     "js-yaml": "^3.8.1",
     "line-by-line": "^0.1.5",
+    "socket.io": "^1.7.2",
     "superagent": "^3.4.1"
   }
 }
