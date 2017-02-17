@@ -88,5 +88,8 @@ module.exports = {
         resolve(true)
       })
     })
+  },
+  hexo_deploy: function () {
+    return child.spawn('hexo', ['d'])
   }
 }

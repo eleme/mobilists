@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>饿了么移动组博客后台</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      min-width: 940px;
+      font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+      overflow: hidden;
+    }
+    .main-wrapper {
+      width: 80%;
+      margin: auto;
+      display: flex;
+      justify-content: space-around;
+      margin-top: 5%;
+    }
+    a img {
+      width: 100px;
+    }
+    a:hover {
+      cursor: pointer;
+    }
+    a:disabled {
+      cursor: default;
+    }
+    a:active {
+      outline: dashed;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+<div class="main-wrapper" id="app">
+  <a v-on:click="deploy" :disabled="enabled">
+    <img :src="imgsrc">
+  </a>
+</div>
+<div style="width: 60%; margin: auto" id="app2">
+  <ul>
+    <li v-for="log in logs">{{log}}</li>
+  </ul>
+</div>
+<script src="scripts/jquery.min.js"></script>
+<script src="scripts/vue.min.js"></script>
+<script src="scripts/socket.io.js"></script>
+<script>
+  var vueapp = new Vue({
+    el: '#app',
+    data: {
+      enabled: false,
+    },
+    computed: {
+      imgsrc: function () {
+        return this.enabled ? 'img/icon_button.png' : 'img/icon_button_disable.png'
+      }
+    },
+    methods: {
+      deploy: function () {
+        if (!this.enabled) {
+          return
+        }
+        socket.emit('hexo-deploy')
+        this.enabled = false
+      }
+    }
+  })
+  var vueapp2 = new Vue({
+    el: '#app2',
+    data: {
+      logs:[]
+    }
+  })
+  var socket = io();
+  socket.on('userconnected', function (data) {
+    vueapp.enabled = true
+  });
+  socket.on('logs', function (data) {
+    vueapp2.logs.push(data.log)
+  })
+  socket.on('deploy-done', function (data) {
+    vueapp.enabled = true
+    alert('部署成功')
+  })
+  socket.on('deploy-error', function () {
+    vueapp.enabled = true
+    alert('部署失败')
+  })
+
+
+  function getUserInfo(cb) {
+    $.ajax({
+      url: '/user',
+      method: 'get',
+      success: function (data) {
+        console.log(data)
+        cb(data)
+      }
+    })
+  }
+
+  $(document).ready(function() {
+    getUserInfo(function (info) {
+      if (!info.valid) {
+        location.href='/verify.html'
+      }
+    })
+  })
+</script>
+</body>
+</html>

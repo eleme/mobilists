@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!--suppress JSJQueryEfficiency -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -14,183 +13,43 @@
       overflow: hidden;
     }
     .main-wrapper {
-      height: 100%;
-      background: #eeeeee;
-      box-sizing: border-box;
-      display: flex;
-    }
-    .writer {
-      flex: 5;
-      overflow-y: auto;
-      overflow-x: hidden;
-      box-sizing: border-box;
-      border-right: 1px solid #999;
-      display: flex;
-      flex-direction: column;
-    }
-    .viewer {
-      flex:4;
-      box-sizing: border-box;
-    }
-    .writer-header {
-      height: 88px;
-      width: 100%;
-      position: relative;
-      border-bottom: 1px dashed #999999;
-    }
-    .writer-area {
-      flex: 1;
-      display: flex;
-    }
-    input {
-      outline: none;
-      border: 1px solid #eeeeee;
-      height: 32px;
-      font-size: 1em;
-      background: transparent;
-      border-radius: 4px;
-      padding-left: 8px;
-      padding-right: 8px;
-      text-align: center;
-    }
-    input:focus {
-      border-bottom: 1px solid #999999;
-      border-radius: 0;
-    }
-    .tag {
-      margin-left: 4px;
-      padding: 4px;
-      border-radius: 4px;
-      background: #3190e8;
-      color: white;
-    }
-    .global-modal {
-      display: none;
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      background: rgba(0,0,0,0.4);
-      margin: 0;
-    }
-    .load-wrapper {
-      width: 64px;
-      height: 64px;
-      overflow: hidden;
+      width: 80%;
       margin: auto;
-      margin-top: 240px;
-      animation-name: rotateAnimation;
-      animation-duration: 0.9s;
-      animation-iteration-count: infinite;
-      animation-timing-function: linear;
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20%;
     }
-    @keyframes rotateAnimation {
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(360deg);
-      }
+    .app img {
+      height: 88px;
+    }
+    .app p {
+      text-align: center;
+      text-decoration: none;
+      margin: 0 auto;
+    }
+    .app {
+      text-decoration: none;
+      color: #3190e8;
+    }
+    .app:hover {
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-<div class="global-modal">
-  <div class="load-wrapper" id="load-wrapper">
-    <img id="load-indicator" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAADACAMAAACDB5U0AAAAMFBMVEUAAAD///////////////////////////////////////////////////////////87TQQwAAAAEHRSTlMAUQwWSGr/BSODz+iYN7ioo0T1UwAABSpJREFUeNrtmouSozgMRbFlYfn9/387FoaIJFAYU7s7W5Vb3ZOkMzrIliD2JdNPf79UCOpJPMxV8ABADKC7UakUOgLolHRPvPbz7OEbYI1SxvaMO4Qwu28AqUroAdg4VwR9ArSqgNQ3c5xC+QQkVaWnLrm5Esw7ADi+obqmMczZvgGMMjyFnVKcAu4B1JOAlZbLNQUPAtDmbQaPM0nZO9qecwqutXKAtYTwaihz1FG2BB88ru8spYTtZLK7ElqqLJWOAd6HrNZS1nZkGEBrwq2EwP3ItKMhBM+IuLxpciF5D4yB5ZG7gWlwWD3nlyS8g5NZ3sJPT6oUQ0McZNiyZyWYzmXaTBR7cHzDg1eGLpoBawIhHgOq6LobwflCx0OQwV8g7El2HeHjApGeTmX1Sx9ZmiwqUsSTQrLMezHzTl5qcFAHIQwCzOvno4G6hqBOhzDpgUn85wRndNsXjtEdn+7J0DVCq1hixtMa0EV8cqXEWE4A5upqQC28HA8Brq5HgLGG19+jj0C5Ip6Og1p4QVpeIb7SkLUFmbWLjj4XXMs+rVeVGNHyn+3b2sJS6+N0DChx+/zE6BwDQCng0lTRlgy/SIczGBW8njsXTaUiInOSMpI2JHl+csWyWAFYX2pE5Ed4P+rliWBiBaRJAG19AlOntKvCSQDy+d4nxQnQDtC7wtjPoJreAbZrjSMz6GAPuLfKAk4gTZ+AKfWmoFsTfgE0V7IDIKeBAJpAlkZ9EsCAngNkODT99NNPz2W8N0/iQTbiY6JQRbejYqQPgPgKHdI5hKy/AdA2ctcC3vPgNyD2+inWhYqgTwBxfOm7rHMK8ROQb/gxGCrBvAMUxzO1bxrXnZ8ArG/b8E4pTkHtAcgJYL9/wDv5DALgEs7+YtFNJeOrZ3ge3Vp7WEtoLvyD6LPPuL6zlFJvJxMsJTz1DwTA+yWzdlMIhWF6+YdHQFf+ARWfGeFSa/xIb2e16vAPMC9JZISDNWSXf0CuJVFo2D9I60w88A9U8dm7R/4B5vi/9A/0U/8g7kQD/kEsEl9cp39wDhjwD1IUOXroH9j/3j/Q0zP/QDnUD/wD46KLatw/wMg7nmH/AB0r4ph/oJVbDu9G/YMaykJaN5r6pn+wjr7RAdHJTF74BwKIbtvXGURUtvnB3f4BOvEPsCrJoW/7B6ol0A494B8krKJJAHf9A45XkwDu+geGASCAu/4BcLyZBNDnH4gUA7QAbvsHrYQCuO0ftBIK4L5/IH0igBH/QACjklYeFxnz8w9++umR5P6TGQ6Wjfi4yFfR7SjnthhgAMhasouli/dF7wFih3QNB3jPg98A125Fd2jZedEOIF8qiH2XdU7BfQLK3O/HIKeQ3gGm3Y3vky4VEO0eYJfvA+h+/ypnr/YA5ATUJLrYlMVKKCCNBKEmkKVQJ/0jK9S0llL71sqOE0gvoypkOrtNpLTMY9HbyQRLCTfzn72AfHmjKnsfxT+oTbiWUPmZ5Y9vlTUEtcZfHmVIpj3Oi4I5vdVYERH1d35LUePcdGrKEZaGOPwPKbRwr65vWLqjBH3LHu2Ff1ATKHgKiDB+09aEuaS+c8GeoOlv9g+S22nEP3B7YZ9/cAqIOOIfOBH+/AMwqB74BzZhlRn2D0hxvDOj/oHCRWrQPzDYlOyYf4BN29e30l3/QLXsSbZoN/0DJdnLJvGOfwAKk943PT3wDwwHPPAPSFWN+gdiFgz6B3K4Qf9ABjziH0gJh/0DKfq4f8C1f+QfQEo//+Cnf1t/AFGZQwaktm6jAAAAAElFTkSuQmCC">
-  </div>
-</div>
-<div class="main-wrapper" id="app">
-  <div class="writer">
-    <div class="writer-header">
-      <div  style="width: 100%">
-        <div style="margin: auto;width:300px"><input type="text" placeholder="输入标题,回车创建" style="margin: auto;" id="title" v-model="title" @keyup.enter="createPost"><select v-model="category">
-          <option>iOS</option>
-          <option>Android</option>
-        </select></div>
-      </div>
-      <div style="overflow-x: auto;overflow-y: hidden; box-sizing: border-box">
-        <a v-for="tag in tags" class="tag">{{tag}}</a><input v-model="newtag" type="text" style="margin-left:4px;background: white; width: 50px; font-size: 0.5em; padding: 0; line-height: 1" placeholder="new tag" @keyup.enter="addTag">
-      </div>
-    </div>
-    <div class="writer-area">
-      <textarea style="width: 100%;border: none;outline: none;flex: 1;box-sizing: border-box;padding: 8px; font-size: 1em;background: rgb(45,45,45);color: white" @keyup.ctrl.83="updatePost" v-model="editcontent"></textarea>
-    </div>
-  </div>
-  <div class="viewer">
-    <iframe src="http://localhost:4000" style="width: 100%;height: 100%;border: none" id="preview-frame">
-    </iframe>
-  </div>
+<div class="main-wrapper">
+  <a href="editor.html" class="app">
+    <img src="img/icon_post.png">
+    <p>编辑器</p>
+  </a>
+  <a class="app" href="deployer.html">
+    <img src="img/icon_deploy.png">
+    <p>部署器</p>
+  </a>
 </div>
 <script src="scripts/jquery.min.js"></script>
 <script src="scripts/vue.min.js"></script>
 <script>
-  var app = new Vue({
-    el: '#app',
-    data: {
-      title: '',
-      tags: [],
-      newtag: '',
-      editcontent: '',
-      category: 'iOS'
-    },
-    methods: {
-      addTag: function () {
-        if (this.newtag.length > 0) {
-          var tags = this.tags
-          tags.push(this.newtag)
-          this.newtag = ''
-        }
-      },
-      createPost: function () {
-        if (this.title.length > 0) {
-          $('#title').attr('disabled', true)
-          $('.global-modal').show()
-          $.ajax({
-            url: '/post/create/' + this.title,
-            method: 'post',
-            data: {
-              'tags': this.tags,
-              'category': this.category
-            },
-            success: function (url) {
-              setTimeout(function () {
-                $('.global-modal').hide()
-                $('#preview-frame').attr('src', url)
-              }, 3000)
-            },
-            error: function () {
-              alert('创建失败，换个文章名试试')
-              location.reload()
-            }
-          })
-        }
-      },
-      updatePost: function () {
-        $('.global-modal').show()
-        $.ajax({
-          url: '/post/update/' + this.title,
-          method: 'post',
-          data: {
-            'tags': this.tags,
-            'content': this.editcontent,
-            'category': this.category
-          },
-          success: function () {
-            $('.global-modal').hide()
-            setTimeout(function () {
-              var url = $('#preview-frame')[0].src
-              $('#preview-frame').attr('src', url)
-            }, 3000)
-          },
-          error: function (e) {
-            $('.global-modal').hide()
-            alert(e)
-          }
-        })
-      }
-    }
-  })
   function getUserInfo(cb) {
     $.ajax({
       url: '/user',
@@ -206,10 +65,6 @@
     getUserInfo(function (info) {
       if (!info.valid) {
         location.href='/verify.html'
-      } else {
-        window.onbeforeunload = function () {
-          return confirm('将会丢失数据')
-        }
       }
     })
   })
