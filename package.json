@@ -10,7 +10,6 @@
     "cheerio": "^0.22.0",
     "express": "^4.14.1",
     "hexo": "~x",
-    "hexo-admin": "~x",
     "hexo-deployer-git": "~x",
     "hexo-generator-archive": "~x",
     "hexo-generator-category": "~x",
