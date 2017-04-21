@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "hexo": {
-    "version": "3.2.2"
+    "version": "3.3.1"
   },
   "dependencies": {
     "body-parser": "^1.16.0",
@@ -14,6 +14,7 @@
     "hexo-generator-archive": "~x",
     "hexo-generator-category": "~x",
     "hexo-generator-feed": "^1.2.0",
+    "hexo-generator-friendlink": "1.0.0",
     "hexo-generator-index": "~x",
     "hexo-generator-multiauthor": "1.0.0",
     "hexo-generator-tag": "~x",
