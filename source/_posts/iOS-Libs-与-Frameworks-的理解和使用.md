@@ -402,7 +402,8 @@ MyApp.app/Frameworks/MyHandMadeFramework.framework/MyPod.bundle/img.png
 NSBundle *libBundle = [NSBundle bundleForClass:[self class]];
 NSString *resourceBundlePath = [[libBundle bundlePath] stringByAppendingPathComponent:@"MyPod.bundle"];
 NSBundle *resourceBundle = [NSBundle bundleWithPath:resourceBundlePath]; // 这里应该把 resourceBundle 缓存下来
-NSString *imgPath = [bundleContainingPodsCode pathForResource:@"img" ofType:@“png”];
+
+NSString *imgPath = [resourceBundle pathForResource:@"img" ofType:@“png”];
 ```
 
 当然，如果你的 app 的 deployment target 为 iOS 8，那么可以直接用如下这个新的 api 来从 resource bundle 里取图片：
