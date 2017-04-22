@@ -79,8 +79,8 @@ friendlink:
   - name: LPD-iOS
     avatar: 'http://lrd.ele.me/images/ico.png'
     url: 'https://lpd-ios.github.io'
-    introduction: '饿了么物流 iOS 开发组(LPD-iOS)'
+    introduction: 饿了么物流 iOS 开发组(LPD-iOS)
   - name: stephenwzl
     avatar: 'https://ws1.sinaimg.cn/large/8696f529gy1feu8hi9100j209c08saeg.jpg'
     url: 'https://stephenw.cc'
-    introduction: 'eleme mobile hexo theme 维修工'
+    introduction: eleme mobile hexo theme 维修工
