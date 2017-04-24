@@ -3,3 +3,11 @@ http://mobilists.eleme.io/mobilists/2016/02/12/%E8%AF%A6%E8%A7%A3-iOS-8-UIPresen
 http://mobilists.eleme.io/mobilists/mobilists/2016/08/26/terminator/, http://mobilists.eleme.io/mobilists/2016/08/26/terminator/
 
 http://mobilists.eleme.io/mobilists/2016/02/25/android-APP-%E7%98%A6%E8%BA%AB/, http://mobilists.eleme.io/2016/02/25/android-APP-%E7%98%A6%E8%BA%AB/
+
+http://mobilists.eleme.io/mobilists/mobilists/2016/06/20/%E6%B5%85%E8%B0%88Mantle/, http://mobilists.eleme.io/mobilists/2016/06/20/%E6%B5%85%E8%B0%88Mantle/
+
+http://mobilists.eleme.io/mobilists/mobilists/2016/03/15/%E7%94%A8UIKit-Dynamics%E6%A8%A1%E4%BB%BFUIScrollView/, http://mobilists.eleme.io/mobilists/2016/03/15/%E7%94%A8UIKit-Dynamics%E6%A8%A1%E4%BB%BFUIScrollView/
+
+http://mobilists.eleme.io/mobilists/2016/01/10/%E7%AA%81%E7%A0%B4%E5%BE%AE%E4%BF%A1%E8%B7%B3%E8%BD%AC%E9%99%90%E5%88%B6%EF%BC%8DUniversal-Links%E9%82%A3%E4%BA%9B%E5%9D%91/, http://mobilists.eleme.io/2016/01/10/%E7%AA%81%E7%A0%B4%E5%BE%AE%E4%BF%A1%E8%B7%B3%E8%BD%AC%E9%99%90%E5%88%B6%EF%BC%8DUniversal-Links%E9%82%A3%E4%BA%9B%E5%9D%91/
+
+http://mobilists.eleme.io/mobilists/mobilists/2016/04/12/ReactiveCocoa%E5%AE%9E%E8%B7%B5%EF%BC%88%E4%B8%80%EF%BC%89/, http://mobilists.eleme.io/mobilists/2016/04/12/ReactiveCocoa%E5%AE%9E%E8%B7%B5%EF%BC%88%E4%B8%80%EF%BC%89/
