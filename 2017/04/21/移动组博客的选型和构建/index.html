@@ -1,0 +1,181 @@
+
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="移动组博客的选型和构建">
+    <meta name="keywords" content="hexo,eleme,">
+    <link rel="apple-touch-icon" href="/img/default_logo.png">
+    <link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/atom-one-light.min.css" rel="stylesheet">
+    <title>移动组博客的选型和构建 - Eleme Mobilists</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="/css/eleme-theme.css">
+    
+  
+</head>
+<body>
+
+<div class="container-fluid eleme-wrapper">
+    <nav class="navbar navbar-default eleme-navbar">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">
+                    <img alt="eleme" src="/img/eleme-logo.png" style="height: 20px">
+                </a>
+                <button class="navbar-toggle" data-toggle="collapse" href="#eleme-navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse" id="eleme-navbar-collapse">
+            <ul class="nav navbar-nav navbar-right">
+                
+                <li><a href="/archives">归档</a></li>
+                
+                <li><a href="/about">关于</a></li>
+                
+                <li><a href="/friend">友链</a></li>
+                
+                <li><a href="/atom.xml">订阅</a></li>
+                
+            </ul>
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="eleme-body">
+        <div id="content-inner">
+            <article id="post" class="container">
+    <h1 class="post-title">移动组博客的选型和构建</h1>
+    <p class="post-meta">
+        
+        <span class="release">发表于
+            <time datetime="2017-04-21T10:32:25.000Z">
+            2017-04-21
+            </time>
+        </span>
+        
+        
+        <span>&nbsp;分类: <a href="/categories/iOS/">iOS</a></span>
+        
+        
+        <span class="author">&nbsp;authored by <a href="/author/stephenwzl">stephenwzl</a></span>
+        
+    </p>
+    <div class="post-wrapper">
+        <p>今天饿了么移动组首席表情官来和你聊聊这个博客系统是怎么做的，准备好了<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuhfqobu5j204m04rgm0.jpg" alt=""><br>首先，浩浩荡荡的二十来号人，总有些需求没地方发泄，大家有一句没一句地一聊，哎？咱弄个博客吧<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuhjhi031j208c06iq34.jpg" alt=""><br>那就弄吧，一没服务器，二没域名，三没什么文笔，不过谁说过来着，人有多大胆，地有多大产，很快咱就发现 Github Pages 一不要域名，而不要服务器，能拿来弄个网站呀。但说到要手写HTML，大伙的反映是这样的<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuhngeh04j203l08c747.jpg" alt=""><br>什么年代了，食堂都有自动打饭机了，咱还能这么土吗。果不其然，找了一个玩意叫 Hexo，很快咱就把第一版网站给弄上线了。<br>上线后很快就发现一个问题，咱堂堂这么大组的博客，它长得怎么这么丑！<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuhrq6axlj209q09qaac.jpg" alt=""><br>干了十多年装修工的我就出了个主意：咱给他重新装修一下吧。<br>老大一拍板：好，这也不失为一个馊主意。<br>于是除了首席表情官的身份，咱又多了一个身份叫首席装修工。拿起锤子镰刀，我就搞出了一个新的来，怎么搞的呢，且听我细细道来。<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuhxb3fj6j205k05k0sn.jpg" alt="">  </p>
+<p>首先，咱得会一点 Node.js，搞清楚 Hexo是怎么干的。也不知道是它学 Jekyll还是 Jekyll学它，他俩都有几个共同点：  </p>
+<ol>
+<li>靠模板生成不同的页面的内容，靠配置生成不同的页面和路径，靠主题模板实现不同的外观 （这是废话，谁写都这么干） </li>
+<li>都靠插件实现具体功能，每一个插件负责整个网站的不同部分，如首页、归档、文章等   </li>
+<li>核心向插件暴露 API，并且制定了载入不同类型插件的规则  </li>
+<li>我好像就能总结出上面3点  </li>
+</ol>
+<p>那咱就发现，要给它彻底装修一番，只要弄个主题就好了。<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feui6ll54kj208b08caa5.jpg" alt="">  </p>
+<p>主题的也是考插件规定它的一些用法的，比如，咱这次写主题弄了一个插件来渲染 markdown语法、stylus的 CSS语法，EJS的 HTML模板，它们分别叫：  </p>
+<ol>
+<li>hexo-render-marked</li>
+<li>hexo-render-stylus</li>
+<li>hexo-render-ejs    </li>
+</ol>
+<p>就这开头，咱再瞎也认识它们是干嘛的了。<br>然后呢，就是针对主题还有一些配置，写在主题目录下的 <code>_config.yml</code>里面，这个配置是会在渲染的时候载入到变量里面的，然后就能在模板里面取到了。<br>（此处省略1万字）很快，凭着多年的装修经验，这个网站就焕然一新了，大家对我投来崇拜的目光<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuinzjnioj207708cdft.jpg" alt=""><br>这时候老大说了，这文章写了，也不知道谁写的，棒毛线。<br>这也难不倒咱们中华小当家，不就是弄个多人协作嘛，都是很基础地！怎么做呢？    </p>
+<ul>
+<li>搞一个 Hexo插件，让它能渲染作者页  </li>
+<li>在配置里面加入作者信息，并且弄了一个命令行工具，可以自动管理这些信息  </li>
+<li>搞了一个工具，输入 github ID就可以可视化编写文章，自动管理作者信息，并且可视化地一键部署  </li>
+<li>把这个工具用 Docker包了一下，放到了内网跑任务的机器上，团队都能访问，这样大家都可以从UI上写文章、发表了    </li>
+</ul>
+<p>最后，大家都可以从文章页点击进入作者页，看到自己的成果啦，是不是很简单呢<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuivuw5j3j208c08cmxa.jpg" alt=""><br>同样地，要做一个友情链接，也只需要写一个简单的插件，渲染页面，然后在配置文件里面写一写或者通过前面的工具自动管理友链的信息。<br>不过还有些地方还没做，比如：  </p>
+<ul>
+<li>https  </li>
+<li>CDN  </li>
+<li>把它换成WordPress之类的动态博客系统  （谁叫咱穷呢）（PS：不要跟我讲 Ghost这种博客系统）（PPS：PHP是最好的语言）    </li>
+</ul>
+<p><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuj3cs6ztj205w07dwf1.jpg" alt=""></p>
+
+    </div>
+    
+    <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        var disqus_shortname = 'elememobileblog';
+        var disqus_identifier = '2017/04/21/移动组博客的选型和构建/';
+        var disqus_title = '移动组博客的选型和构建';
+        var disqus_url = 'http://mobilists.eleme.io/2017/04/21/移动组博客的选型和构建/';
+
+        function run_disqus_script(disqus_script){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }
+
+        run_disqus_script('count.js');
+        
+        run_disqus_script('embed.js');
+        
+    </script>
+
+    <noscript>Please enable JavaScript to view the comments</noscript>
+
+    
+</article>
+
+
+
+<nav class="pagination row">
+
+    <div class="pagination-indicator col-xs-4">
+        
+    </div>
+  <div class="pagination-number col-xs-4">
+      
+  </div>
+
+ <div class="pagination-indicator col-xs-4">
+     
+     <a href="/2017/02/28/iOS-Libs-与-Frameworks-的理解和使用/" class="next-post">iOS Libs 与 Frameworks 的理解和使用 ></a>
+     
+ </div>
+</nav>
+
+
+
+        </div>
+    </div>
+
+    <div class="eleme-footer">
+        <div id="bottom-inner">
+            <p class="eleme-copyright">&copy; copyright 2016-2017 by Eleme Mobilists</p>
+            <p class="eleme-theme-copyright">eleme-mobile hexo theme by eleme ios team</a></p>
+            <br>
+        </div>
+    </div>
+    
+    
+    <script src="/js/eleme-theme.js"></script>
+    
+    
+    <script src="//cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="//cdn.bootcss.com/highlight.js/9.10.0/highlight.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        $('figure').each(function(i, block) {
+          hljs.highlightBlock(block);
+        });
+      });
+    </script>
+</div>
+
+</body>
+</html>

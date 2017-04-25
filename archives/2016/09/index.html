@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="initial-scale=1, maximum-scale=1">
-  <meta name="description" content="这里是饿了么用户端移动组的技术博客，我们保证至少每个月都会有一篇分享">
-  <meta name="keywords" content="eleme, 饿了么, 移动组, 技术博客, Android, iOS">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="这里是饿了么用户端移动组的技术博客，我们保证至少每个月都会有一篇分享">
+    <meta name="keywords" content="eleme, 饿了么, 移动组, 技术博客, Android, iOS">
     <link rel="apple-touch-icon" href="/img/default_logo.png">
-  <title>归档: 9/2016: 2016 - Eleme Mobilists</title>
+    <link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/atom-one-light.min.css" rel="stylesheet">
+    <title>归档: 9/2016: 2016 - Eleme Mobilists</title>
   
     <!-- stylesheets list from config.yml -->
     
@@ -19,32 +21,45 @@
 </head>
 <body>
 
-<div id="wrapper">
-    <div id="eleme-menu-outer">
-        <div id="eleme-menu-wrapper">
-            <a href="/"><img src="/img/eleme-logo.png"></a>
-                <div id="menu-inner">
+<div class="container-fluid eleme-wrapper">
+    <nav class="navbar navbar-default eleme-navbar">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">
+                    <img alt="eleme" src="/img/eleme-logo.png" style="height: 20px">
+                </a>
+                <button class="navbar-toggle" data-toggle="collapse" href="#eleme-navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse" id="eleme-navbar-collapse">
+            <ul class="nav navbar-nav navbar-right">
                 
-                <a href="/">主页</a>
+                <li><a href="/archives">归档</a></li>
                 
-                <a href="/archives">归档</a>
+                <li><a href="/about">关于</a></li>
                 
-                <a href="/about">关于</a>
+                <li><a href="/friend">友链</a></li>
                 
-                <a href="/atom.xml">订阅</a>
+                <li><a href="/atom.xml">订阅</a></li>
                 
+            </ul>
             </div>
         </div>
-    </div>
 
-    <div id="eleme-content-outer">
+    </nav>
+
+    <div class="eleme-body">
         <div id="content-inner">
             
 
 
 
-
-  <h1 class="archive-item-title">9/2016</h1>
+<div class="container">
+  <p class="archive-item-title">9/2016</p>
 
   
     <div class="archive-item">
@@ -59,7 +74,7 @@
       </time>
     </div>
   
-
+</div>
 
 
 
@@ -69,7 +84,7 @@
         </div>
     </div>
 
-    <div id="eleme-bottom-outer">
+    <div class="eleme-footer">
         <div id="bottom-inner">
             <p class="eleme-copyright">&copy; copyright 2016-2017 by Eleme Mobilists</p>
             <p class="eleme-theme-copyright">eleme-mobile hexo theme by eleme ios team</a></p>
@@ -81,6 +96,16 @@
     <script src="/js/eleme-theme.js"></script>
     
     
+    <script src="//cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="//cdn.bootcss.com/highlight.js/9.10.0/highlight.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        $('figure').each(function(i, block) {
+          hljs.highlightBlock(block);
+        });
+      });
+    </script>
 </div>
 
 </body>

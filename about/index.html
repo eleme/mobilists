@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="initial-scale=1, maximum-scale=1">
-  <meta name="description" content="">
-  <meta name="keywords" content="eleme, 饿了么, 移动组, 技术博客, Android, iOS">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="">
+    <meta name="keywords" content="eleme, 饿了么, 移动组, 技术博客, Android, iOS">
     <link rel="apple-touch-icon" href="/img/default_logo.png">
-  <title>about - Eleme Mobilists</title>
+    <link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/atom-one-light.min.css" rel="stylesheet">
+    <title>Eleme Mobilists</title>
   
     <!-- stylesheets list from config.yml -->
     
@@ -19,54 +21,106 @@
 </head>
 <body>
 
-<div id="wrapper">
-    <div id="eleme-menu-outer">
-        <div id="eleme-menu-wrapper">
-            <a href="/"><img src="/img/eleme-logo.png"></a>
-                <div id="menu-inner">
+<div class="container-fluid eleme-wrapper">
+    <nav class="navbar navbar-default eleme-navbar">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">
+                    <img alt="eleme" src="/img/eleme-logo.png" style="height: 20px">
+                </a>
+                <button class="navbar-toggle" data-toggle="collapse" href="#eleme-navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse" id="eleme-navbar-collapse">
+            <ul class="nav navbar-nav navbar-right">
                 
-                <a href="/">主页</a>
+                <li><a href="/archives">归档</a></li>
                 
-                <a href="/archives">归档</a>
+                <li><a href="/about">关于</a></li>
                 
-                <a href="/about">关于</a>
+                <li><a href="/friend">友链</a></li>
                 
-                <a href="/atom.xml">订阅</a>
+                <li><a href="/atom.xml">订阅</a></li>
                 
+            </ul>
             </div>
         </div>
-    </div>
 
-    <div id="eleme-content-outer">
+    </nav>
+
+    <div class="eleme-body">
         <div id="content-inner">
-            
-<article id="page">
-  <h1 class="page-title">about</h1>
-  <div class="page-content"><p>这里是饿了么用户端的Tech Blog, 我们保证至少每个月都会有一篇分享.</p>
+            <div class="container">
+    <div class="row" style="height: 60px; margin-top: 32px">
+        <div class="col-xs-12"><img src="/img/default_logo.png" class="img-rounded" width="64px" style="display: block; margin:auto"></div>
+        <div class="col-xs-12 text-center">
+            <h4>饿了么移动组</h4>
+            <p>饿了么 App &nbsp;&nbsp; iOS × Android</p>
+        </div>
+    </div>
+    <h3 class="text-center" style="margin-top: 120px; border-bottom: 1px dashed #eeeeee; padding-bottom: 16px">Contributors</h3>
+    <div class="row">
+        
+        
+        <div class="col-xs-4 col-sm-3 eleme-friend-link-item">
+            <a href="/author/axl411">
+            <img src="https://avatars0.githubusercontent.com/u/5897680?v=3&amp;s=400" style="border-radius: 50%; height: 60px !important;">
+            </a>
+            <div class="eleme-friend-link-itemwrap">
+                <p class="eleme-friend-link-title">axl411</p>
+            </div>
+        </div>
+        
+        
+        <div class="col-xs-4 col-sm-3 eleme-friend-link-item">
+            <a href="/author/canaan">
+            <img src="/img/default_logo.png" style="border-radius: 50%; height: 60px !important;">
+            </a>
+            <div class="eleme-friend-link-itemwrap">
+                <p class="eleme-friend-link-title">canaan</p>
+            </div>
+        </div>
+        
+        
+        <div class="col-xs-4 col-sm-3 eleme-friend-link-item">
+            <a href="/author/PhilCai">
+            <img src="https://avatars0.githubusercontent.com/u/6828315?v=3&amp;s=400" style="border-radius: 50%; height: 60px !important;">
+            </a>
+            <div class="eleme-friend-link-itemwrap">
+                <p class="eleme-friend-link-title">PhilCai</p>
+            </div>
+        </div>
+        
+        
+        <div class="col-xs-4 col-sm-3 eleme-friend-link-item">
+            <a href="/author/stephenwzl">
+            <img src="https://avatars3.githubusercontent.com/u/10472240?v=3&amp;s=460" style="border-radius: 50%; height: 60px !important;">
+            </a>
+            <div class="eleme-friend-link-itemwrap">
+                <p class="eleme-friend-link-title">stephenwzl</p>
+            </div>
+        </div>
+        
+        
+        <div class="col-xs-4 col-sm-3 eleme-friend-link-item">
+            <a href="/author/BryanOne">
+            <img src="https://avatars1.githubusercontent.com/u/1538965?v=3&amp;s=460" style="border-radius: 50%; height: 60px !important;">
+            </a>
+            <div class="eleme-friend-link-itemwrap">
+                <p class="eleme-friend-link-title">BryanOne</p>
+            </div>
+        </div>
+        
+    </div>
 </div>
-</article>
-
-
-
-<nav id="pagination">
-
-  <div class="pagination-number">
-      
-  </div>
-
- <div class="pagination-indicator">
-     
-
-     
- </div>
-</nav>
-
-
-
         </div>
     </div>
 
-    <div id="eleme-bottom-outer">
+    <div class="eleme-footer">
         <div id="bottom-inner">
             <p class="eleme-copyright">&copy; copyright 2016-2017 by Eleme Mobilists</p>
             <p class="eleme-theme-copyright">eleme-mobile hexo theme by eleme ios team</a></p>
@@ -78,6 +132,16 @@
     <script src="/js/eleme-theme.js"></script>
     
     
+    <script src="//cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="//cdn.bootcss.com/highlight.js/9.10.0/highlight.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        $('figure').each(function(i, block) {
+          hljs.highlightBlock(block);
+        });
+      });
+    </script>
 </div>
 
 </body>

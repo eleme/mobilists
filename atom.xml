@@ -5,10 +5,254 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://mobilists.eleme.io/"/>
-  <updated>2017-02-07T09:21:46.000Z</updated>
+  <updated>2017-04-25T09:08:29.000Z</updated>
   <id>http://mobilists.eleme.io/</id>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>移动组博客的选型和构建</title>
+    <link href="http://mobilists.eleme.io/2017/04/21/%E7%A7%BB%E5%8A%A8%E7%BB%84%E5%8D%9A%E5%AE%A2%E7%9A%84%E9%80%89%E5%9E%8B%E5%92%8C%E6%9E%84%E5%BB%BA/"/>
+    <id>http://mobilists.eleme.io/2017/04/21/移动组博客的选型和构建/</id>
+    <published>2017-04-21T10:32:25.000Z</published>
+    <updated>2017-04-25T09:08:29.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>今天饿了么移动组首席表情官来和你聊聊这个博客系统是怎么做的，准备好了<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuhfqobu5j204m04rgm0.jpg" alt=""><br>首先，浩浩荡荡的二十来号人，总有些需求没地方发泄，大家有一句没一句地一聊，哎？咱弄个博客吧<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuhjhi031j208c06iq34.jpg" alt=""><br>那就弄吧，一没服务器，二没域名，三没什么文笔，不过谁说过来着，人有多大胆，地有多大产，很快咱就发现 Github Pages 一不要域名，而不要服务器，能拿来弄个网站呀。但说到要手写HTML，大伙的反映是这样的<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuhngeh04j203l08c747.jpg" alt=""><br>什么年代了，食堂都有自动打饭机了，咱还能这么土吗。果不其然，找了一个玩意叫 Hexo，很快咱就把第一版网站给弄上线了。<br>上线后很快就发现一个问题，咱堂堂这么大组的博客，它长得怎么这么丑！<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuhrq6axlj209q09qaac.jpg" alt=""><br>干了十多年装修工的我就出了个主意：咱给他重新装修一下吧。<br>老大一拍板：好，这也不失为一个馊主意。<br>于是除了首席表情官的身份，咱又多了一个身份叫首席装修工。拿起锤子镰刀，我就搞出了一个新的来，怎么搞的呢，且听我细细道来。<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuhxb3fj6j205k05k0sn.jpg" alt="">  </p>
+<p>首先，咱得会一点 Node.js，搞清楚 Hexo是怎么干的。也不知道是它学 Jekyll还是 Jekyll学它，他俩都有几个共同点：  </p>
+<ol>
+<li>靠模板生成不同的页面的内容，靠配置生成不同的页面和路径，靠主题模板实现不同的外观 （这是废话，谁写都这么干） </li>
+<li>都靠插件实现具体功能，每一个插件负责整个网站的不同部分，如首页、归档、文章等   </li>
+<li>核心向插件暴露 API，并且制定了载入不同类型插件的规则  </li>
+<li>我好像就能总结出上面3点  </li>
+</ol>
+<p>那咱就发现，要给它彻底装修一番，只要弄个主题就好了。<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feui6ll54kj208b08caa5.jpg" alt="">  </p>
+<p>主题的也是考插件规定它的一些用法的，比如，咱这次写主题弄了一个插件来渲染 markdown语法、stylus的 CSS语法，EJS的 HTML模板，它们分别叫：  </p>
+<ol>
+<li>hexo-render-marked</li>
+<li>hexo-render-stylus</li>
+<li>hexo-render-ejs    </li>
+</ol>
+<p>就这开头，咱再瞎也认识它们是干嘛的了。<br>然后呢，就是针对主题还有一些配置，写在主题目录下的 <code>_config.yml</code>里面，这个配置是会在渲染的时候载入到变量里面的，然后就能在模板里面取到了。<br>（此处省略1万字）很快，凭着多年的装修经验，这个网站就焕然一新了，大家对我投来崇拜的目光<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuinzjnioj207708cdft.jpg" alt=""><br>这时候老大说了，这文章写了，也不知道谁写的，棒毛线。<br>这也难不倒咱们中华小当家，不就是弄个多人协作嘛，都是很基础地！怎么做呢？    </p>
+<ul>
+<li>搞一个 Hexo插件，让它能渲染作者页  </li>
+<li>在配置里面加入作者信息，并且弄了一个命令行工具，可以自动管理这些信息  </li>
+<li>搞了一个工具，输入 github ID就可以可视化编写文章，自动管理作者信息，并且可视化地一键部署  </li>
+<li>把这个工具用 Docker包了一下，放到了内网跑任务的机器上，团队都能访问，这样大家都可以从UI上写文章、发表了    </li>
+</ul>
+<p>最后，大家都可以从文章页点击进入作者页，看到自己的成果啦，是不是很简单呢<br><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuivuw5j3j208c08cmxa.jpg" alt=""><br>同样地，要做一个友情链接，也只需要写一个简单的插件，渲染页面，然后在配置文件里面写一写或者通过前面的工具自动管理友链的信息。<br>不过还有些地方还没做，比如：  </p>
+<ul>
+<li>https  </li>
+<li>CDN  </li>
+<li>把它换成WordPress之类的动态博客系统  （谁叫咱穷呢）（PS：不要跟我讲 Ghost这种博客系统）（PPS：PHP是最好的语言）    </li>
+</ul>
+<p><img src="https://ws1.sinaimg.cn/large/8696f529gy1feuj3cs6ztj205w07dwf1.jpg" alt=""></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;今天饿了么移动组首席表情官来和你聊聊这个博客系统是怎么做的，准备好了&lt;br&gt;&lt;img src=&quot;https://ws1.sinaimg.cn/large/8696f529gy1feuhfqobu5j204m04rgm0.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;首先，浩浩荡荡的二十来
+    
+    </summary>
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/categories/iOS/"/>
+    
+    
+      <category term="hexo" scheme="http://mobilists.eleme.io/tags/hexo/"/>
+    
+      <category term="eleme" scheme="http://mobilists.eleme.io/tags/eleme/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>iOS Libs 与 Frameworks 的理解和使用</title>
+    <link href="http://mobilists.eleme.io/2017/02/28/iOS-Libs-%E4%B8%8E-Frameworks-%E7%9A%84%E7%90%86%E8%A7%A3%E5%92%8C%E4%BD%BF%E7%94%A8/"/>
+    <id>http://mobilists.eleme.io/2017/02/28/iOS-Libs-与-Frameworks-的理解和使用/</id>
+    <published>2017-02-28T05:31:03.000Z</published>
+    <updated>2017-04-25T09:08:48.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>本文将从两个角度——理论与实践，来介绍 iOS 开发中接触到的动态库、静态库、framework。理论部分会以简单的例子来建立对概念的理解；实践部分则是使用 cocoapods 的一些技巧。</p>
+<h1 id="名词"><a href="#名词" class="headerlink" title="名词"></a>名词</h1><p>首先我们熟悉一下以下名词概念：</p>
+<ul>
+<li><p>代码（code）：不止是指源代码（source code）形式的代码，也指代编译后产生的二进制代码。</p>
+</li>
+<li><p>Mach-O：操作系统能够使用的二进制文件格式，很多种类的文件都是 Mach-O 文件，包括动态库、静态库、可执行文件，都是 Mach-O 文件。本文将替换使用多种代称，比如 <code>object file</code>、<code>对象文件</code>，都是指同一个概念。</p>
+</li>
+<li><p>动态库、 dynamic linked library、dynamic library、shared library、embedded shared library 这些名词都是指动态库。</p>
+</li>
+</ul>
+<h1 id="理解-Libs-与-Frameworks"><a href="#理解-Libs-与-Frameworks" class="headerlink" title="理解 Libs 与 Frameworks"></a>理解 Libs 与 Frameworks</h1><p>Libs（库），或是 Frameworks，无论静态还是动态，都是一种依赖管理的形式，其最终目的都是将程序依赖的<code>代码</code>载入到程序所在进程的地址空间中，从而让我们的程序能够使用它们。静态库、动态库只是用了不同的机制来实现这个目的。</p>
+<h2 id="静态库"><a href="#静态库" class="headerlink" title="静态库"></a>静态库</h2><p>我们直接以一个简单的例子讲述如何创建静态库并使用它，从而对静态库建立一个简单的概念。</p>
+<h3 id="制作静态库"><a href="#制作静态库" class="headerlink" title="制作静态库"></a>制作静态库</h3><p>有如下两个简单的源代码 <code>bar.h</code> 和 <code>bar.c</code>。<code>bar.c</code> 中声明了 <code>fizz</code> 函数，使用 <code>CoreFoundation</code> 的方法打印一个字符串 <code>buzz</code>，<code>bar.h</code> 将 <code>fizz</code> 函数暴露了出来：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// bar.h</span></div><div class="line"><span class="meta">#ifndef __foo__bar__</span></div><div class="line"><span class="meta">#define __foo__bar__</span></div><div class="line"><span class="meta">#include <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="keyword">int</span> fizz();</div><div class="line"></div><div class="line"><span class="meta">#endif /* defined(__foo__bar__) */</span></div><div class="line"></div><div class="line"><span class="comment">// bar.c</span></div><div class="line"><span class="meta">#include <span class="meta-string">"bar.h"</span></span></div><div class="line"><span class="meta">#include <span class="meta-string">&lt;CoreFoundation/CoreFoundation.h&gt;</span></span></div><div class="line"></div><div class="line"><span class="keyword">int</span> fizz() &#123;</div><div class="line">  <span class="built_in">CFShow</span>(<span class="built_in">CFSTR</span>(<span class="string">"buzz"</span>));</div><div class="line">  <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>使用 <code>clang</code> 将 <code>bar.c</code> 编译为  <code>bar.o</code>。为了简化问题，我们只输出为 <code>x86_64</code> 处理器架构编译的结果。从 <code>file</code> 命令的输出可以看到，输出的 <code>bar.o</code> 是 <code>Mach-O</code> object file：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ clang -c bar.c -o bar.o -arch x86_64</div><div class="line">$ file bar.o</div><div class="line">bar.o: Mach-O 64-bit object x86_64</div></pre></td></tr></table></figure>
+<p>使用 <code>libtool</code>，以 <code>bar.o</code> 为输入，输出一个名称为 <code>libfoo_static.a</code> 的静态库。从 <code>file</code> 的输出可以看到，静态库的文件类型是 <code>current ar archive random library</code>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ libtool -static bar.o -o libfoo_static.a</div><div class="line">$ file libfoo_static.a</div><div class="line">libfoo_static.a: current ar archive random library</div></pre></td></tr></table></figure>
+<h3 id="使用静态库"><a href="#使用静态库" class="headerlink" title="使用静态库"></a>使用静态库</h3><p>有如下简单的 <code>main.c</code> 源代码，通过 <code>bar.h</code> 调用了 <code>fizz</code> 函数：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="comment">// main.c</span></div><div class="line"><span class="meta">#include <span class="meta-string">"bar.h"</span></span></div><div class="line"><span class="keyword">int</span> main() &#123;</div><div class="line">  <span class="keyword">return</span> fizz();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>和制作静态库一样，用 <code>clang</code> 将 <code>main.c</code> 编译为 <code>main.o</code>。<code>main.o</code> 和 <code>bar.o</code> 的类型一样，都是 object file：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ clang -c main.c -o main.o -arch x86_64</div><div class="line">$ file main.o</div><div class="line">main.o: Mach-O 64-bit object x86_64</div></pre></td></tr></table></figure>
+<p>用 <code>ld</code>（linker／链接器）来输出一个名为 <code>test_static</code> 的可执行文件。<code>ld</code> 接收的输入有：<code>main.o</code>、<code>CoreFoundation</code> framework、额外指定了当前文件夹为 library search path（<code>-L.</code>）、<code>libfoo_static</code>（<code>-lfoo_static</code>，正是因为额外指定了当前文件夹为 library search path 才能够找到它）、为简化问题只对 <code>x86_64</code> 架构编译（-lSystem 表示 libsystem，可以忽略，不影响对概念的理解）。通过 <code>file</code> 的输出可以看到 <code>test_static</code> 可执行文件也是一种 <code>Mach-O</code> 文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ ld main.o -framework CoreFoundation <span class="_">-l</span>System -L. -lfoo_static -o test_static -arch x86_64</div><div class="line">$ file test_static</div><div class="line">test_static: Mach-O 64-bit executable x86_64</div></pre></td></tr></table></figure>
+<p>执行 <code>test_static</code>，功能正常，输出了 <code>buzz</code>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ ./test_static</div><div class="line">buzz</div></pre></td></tr></table></figure>
+<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>用 <code>nm</code> 查看 <code>test_static</code> 可执行文件的符号表（symbol table），留意如下信息：</p>
+<ul>
+<li><p><code>_CFShow</code>、<code>___CFConstantStringClassReference</code> 是来自 <code>CoreFoundation</code> framework 的 symbol，在这里还未被 resolve（即还没有指令所在的地址），这是因为 <code>CoreFoundation</code> framework 是动态链接的，两个 symbol 代表的指令的地址并不会在编译时被 resolve。（后面讲动态链接会介绍动态链接的 symbol 是如何 resolve 的）</p>
+</li>
+<li><p><code>_fizz</code> symbol 是来自静态库 <code>libfoo_static</code> 的，在这里已经被 resolve 了，即具体的指令已经存在于 <code>test_static</code> 的二进制中了。</p>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ nm test_static</div><div class="line">                 U _CFShow</div><div class="line">                 U ___CFConstantStringClassReference</div><div class="line">0000000100000000 T __mh_execute_header</div><div class="line">0000000100000f70 T _fizz</div><div class="line">0000000100000f50 T _main</div><div class="line">                 U dyld_stub_binder</div></pre></td></tr></table></figure>
+<p>查看 <code>libfoo_static</code> 以及 <code>bar.o</code> 的符号表，我们发现：</p>
+<ul>
+<li><p><code>libfoo_static</code> 和 <code>bar.o</code> 的符号表内容是完全一样的。</p>
+</li>
+<li><p>从 <code>libfoo_static.a(bar.o):</code> 看出，静态库会把它包含的所有 object file 的符号表分别输出，静态库只是简单的 object file 的集合，这里 <code>libfoo_static</code> 只包含了一个 <code>bar.o</code>。</p>
+</li>
+<li><p>一样有 unresolved 的 <code>CoreFoundation</code> 的 symbol。</p>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ nm libfoo_static.a</div><div class="line">libfoo_static.a(bar.o):</div><div class="line">                 U _CFShow</div><div class="line">                 U ___CFConstantStringClassReference</div><div class="line">0000000000000000 T _fizz</div><div class="line"></div><div class="line">$ nm bar.o</div><div class="line">                 U _CFShow</div><div class="line">                 U ___CFConstantStringClassReference</div><div class="line">0000000000000000 T _fizz</div></pre></td></tr></table></figure>
+<p>用 <code>otool</code> 查看 <code>libfoo_static</code> 对 shared library 的依赖，没有看到任何依赖信息，因此指定依赖的责任自然就到了静态库的使用方。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ otool -L libfoo_static.a</div><div class="line">Archive : libfoo_static.a</div><div class="line">libfoo_static.a(bar.o):</div></pre></td></tr></table></figure>
+<p>一个典型的静态库的例子是微信 SDK。它的接入文档会提到：</p>
+<blockquote>
+<p>SDK文件包括 libWeChatSDK.a，WXApi.h，WXApiObject.h 三个</p>
+</blockquote>
+<p>并且：</p>
+<blockquote>
+<p>开发者需要在工程中链接上:SystemConfiguration.framework, libz.dylib, libsqlite3.0.dylib, libc++.dylib, Security.framework, CoreTelephony.framework, CFNetwork.framework</p>
+</blockquote>
+<p>这和我们看到的例子中自己制作的静态库概念是一样的。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>经过具体的例子，我们可以理解关于静态库的如下概念：</p>
+<ul>
+<li><p>静态库就是 object file 的集合。</p>
+</li>
+<li><p>因此，在使用静态库的时候需要自行指定静态库的任何依赖。</p>
+</li>
+<li><p>静态链接会直接将静态库中的 object file 加到 target（比如 <code>test_static</code> 可执行文件） 中去。</p>
+</li>
+</ul>
+<h2 id="动态库"><a href="#动态库" class="headerlink" title="动态库"></a>动态库</h2><p>动态库和静态库的最大区别是，动态库的代码不会直接加入到目标程序中，而是在启动时由 dynamic link editor <code>dyld</code> 加载到 app 的内存地址空间；另外，动态库包含自己的依赖信息。下面我们依然通过实例来理解这个概念。</p>
+<h3 id="制作动态库"><a href="#制作动态库" class="headerlink" title="制作动态库"></a>制作动态库</h3><p>复用前面制作静态库时编译出的 <code>bar.o</code>，依然使用 <code>libtool</code>，生成名为 <code>libfoo_dynamic.dylib</code> 的动态库。注意这里需要指定 <code>CoreFoundation</code> framework（可以忽略 -lSystem，不影响对概念的理解）。生成的 <code>libfoo_dynamic</code> 的文件类型是动态库：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ libtool -dynamic bar.o -o libfoo_dynamic.dylib -framework CoreFoundation <span class="_">-l</span>System</div><div class="line">$ file libfoo_dynamic.dylib</div><div class="line">libfoo_dynamic.dylib: Mach-O 64-bit dynamically linked shared library x86_64</div></pre></td></tr></table></figure>
+<p>使用 linker <code>ld</code> 来输出一个可执行文件 <code>test_dynamic</code>。这次的输入是同样复用前面编译出的 <code>main.o</code>、<code>foo_dynamic</code> 动态库（忽略 <code>-lSystem</code>），并指定当前文件夹 <code>.</code>（也就是 <code>foo_dynamic</code> 动态库所在的文件夹） 为 library search path。<code>test_dynamic</code> 同样是 <code>Mach-O</code> 可执行文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ ld main.o <span class="_">-l</span>System -L. -lfoo_dynamic -o test_dynamic -arch x86_64</div><div class="line">$ file test_dynamic</div><div class="line">test_dynamic: Mach-O 64-bit executable x86_64</div></pre></td></tr></table></figure>
+<p>执行 <code>test_dynamic</code>，同样能够输出正确的结果：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ ./test_dynamic</div><div class="line">buzz</div></pre></td></tr></table></figure>
+<h3 id="分析-1"><a href="#分析-1" class="headerlink" title="分析"></a>分析</h3><p>用 <code>nm</code> 查看 <code>test_dynamic</code> 可执行文件的 symbol table，留意如下信息：</p>
+<ul>
+<li><p>来自 <code>CoreFoundation</code> framework 的 <code>_CFShow</code>、<code>___CFConstantStringClassReference</code> symbol 并没有存在于 <code>test_dynamic</code> 的符号表中。<code>_fizz</code> 符号只是个 reference，并没有被 resolve。</p>
+</li>
+<li><p>来自动态库 <code>libfoo_dynamic</code> 的 <code>_fizz</code> symbol 在这里并没有被 resolve。</p>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ nm test_dynamic</div><div class="line">0000000100000000 T __mh_execute_header</div><div class="line">                 U _fizz</div><div class="line">0000000100000f70 T _main</div><div class="line">                 U dyld_stub_binder</div></pre></td></tr></table></figure>
+<p>查看 <code>libfoo_dynamic</code> 以及 <code>bar.o</code> 的符号表，我们发现：</p>
+<ul>
+<li><code>libfoo_dynamic</code> 和 <code>bar.o</code> 的 symbol table 内容并不是完全一样的，<code>_fizz</code> symbol 的地址在两者的 symbol table 中是不同的。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ nm libfoo_dynamic.dylib</div><div class="line">                 U _CFShow</div><div class="line">                 U ___CFConstantStringClassReference</div><div class="line">0000000000000f70 T _fizz</div><div class="line">                 U dyld_stub_binder</div><div class="line"></div><div class="line">$ nm bar.o</div><div class="line">                 U _CFShow</div><div class="line">                 U ___CFConstantStringClassReference</div><div class="line">0000000000000000 T _fizz</div></pre></td></tr></table></figure>
+<p>用 <code>otool</code> 查看 <code>libfoo_dynamic</code> 的依赖信息，可以看到 <code>CoreFoundation</code> 是在里面的（同样，忽略 <code>libSystem</code>），因此使用方就不需要指定这个依赖了：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">$ otool -L libfoo_dynamic.dylib</div><div class="line">libfoo_dynamic.dylib:</div><div class="line">	libfoo_dynamic.dylib (compatibility version 0.0.0, current version 0.0.0)</div><div class="line">	/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 1348.28.0)</div><div class="line">	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1238.0.0)</div></pre></td></tr></table></figure>
+<p>经过具体的例子，我们可以理解关于动态库的如下概念：</p>
+<ul>
+<li><p>动态库包含了自己的依赖信息，因此，在使用动态库的时候直接使用动态库就可以。</p>
+</li>
+<li><p>动态链接并不会直接将动态库中的 object file 加到 target（比如 <code>test_dynamic</code> 可执行文件） 中去。</p>
+</li>
+</ul>
+<h3 id="程序是如何使用动态库的"><a href="#程序是如何使用动态库的" class="headerlink" title="程序是如何使用动态库的"></a>程序是如何使用动态库的</h3><p>当执行程序时，例如执行 <code>./test_dynamic</code> 时，在其 <code>main</code> 函数被调用前，Kernel 除了会把 <code>test_dynamic</code> 载入到为其分配的内存空间外，还会载入 <code>dyld</code> linker，然后 <code>dyld</code> 会根据 <code>test_dynamic</code> 的依赖信息，将它依赖的 shared library（也就是 <code>libfoo_dynamic</code>）以及这些 shared library 的依赖（也就是 <code>CoreFoundation</code>）同样载入到内存地址空间。<code>test_dynamic</code> 中未 resolve 的 <code>_fizz</code> symbol 会在这时被 resolve。</p>
+<p>这些 shared library 实际上在设备的物理内存中只存在一份，通过一个 mapping 的机制让它们能同时存在于多个应用的内存地址空间中。</p>
+<p>另外，既然在物理内存中只存在一份，那多个应用使用的同一个 shared library 中的同一个变量是如何有对于该应用而言独有的 value 的呢？知道 Copy on Write 机制，字面意思就是在写操作时就 copy 一份这个概念就行了。</p>
+<p>具体的细节可以参考<a href="https://developer.apple.com/videos/play/wwdc2016/406/" target="_blank" rel="external">这集WWDC</a>。</p>
+<h2 id="Framework"><a href="#Framework" class="headerlink" title="Framework"></a>Framework</h2><p>在理解了动态库、静态库的基础上，framework 只是一个后缀为 <code>.framework</code> 的文件夹，包含了额外的资源，例如头文件、图片、文档、多语言支持资源、nib 等等。虽然 Framework  还有版本的概念，可以同时包含多个版本的 framework 在同一个 <code>.framework</code> 内，但对于 iOS 来说这不重要，因为我们的 Framework 是随 app 的 bundle 一起发布的，不存在被多方使用的问题。动态库在 app bundle 内的位置如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><div class="line">MyApp.app</div><div class="line">├── Frameworks</div><div class="line">│   └── MyDylib.dylib</div><div class="line">│   └── MyFramework.framework</div></pre></td></tr></table></figure>
+<h1 id="（用-cocoapods）使用-Libs-与-Frameworks"><a href="#（用-cocoapods）使用-Libs-与-Frameworks" class="headerlink" title="（用 cocoapods）使用 Libs 与 Frameworks"></a>（用 cocoapods）使用 Libs 与 Frameworks</h1><blockquote>
+<p>将 libWeChatSDK.a，WXApi.h，WXApiObject.h 这三个拖到主工程</p>
+<p>开发者需要在工程中链接上:a.framework, b.dylib, c.dylib, d.dylib, e.framework, f.framework, g.framework</p>
+<p>将 a.png，b.png，c.js 拖到主工程</p>
+</blockquote>
+<p>手动接入某个库或 Framework 往往需要做上面这些手动的事情，时间一长、接入的多了，非常不利于项目的维护。</p>
+<p><a href="https://cocoapods.org/" target="_blank" rel="external"><code>cocoapods</code></a> 提供了非常好的依赖管理机制，并且可以用来对我们要使用的库、framework 进行封装，方便管理维护，不管是静态库、动态库还是 framework，只要填写一份统一的 <code>podspec</code>，就能完成对依赖的封装。如下所示，封装一个依赖的 <code>podspec</code> 通常涉及到填写这些属性：</p>
+<ul>
+<li><code>vendored_frameworks</code>：要封装的 framework 的路径</li>
+<li><code>vendored_libraries</code>：要封装的 lib 的路径</li>
+<li><code>source_files</code>：这里只需要填写想要暴露的头文件的路径</li>
+<li><code>libraries</code>：要封装的库所需要的依赖库</li>
+<li><code>frameworks</code>：要封装的库所依赖的 framework</li>
+<li><code>weak_framework</code>：要封装的库所依赖的 weak link 的 framework，例如 <code>UserNotifications</code> framework 是一个 iOS 10 才有的 framework，通过 weak linking + runtime availability check，可以在低于 iOS 10 的平台上安全地跑起来</li>
+</ul>
+<figure class="highlight ruby"><table><tr><td class="code"><pre><div class="line">spec.vendored_frameworks = <span class="string">'a.framework'</span>, <span class="string">'b.framework'</span></div><div class="line">spec.vendored_libraries = <span class="string">'liba.a'</span>, <span class="string">'libb.a'</span></div><div class="line">spec.source_files = ‘Headers/Public/*.h<span class="string">'</span></div><div class="line">spec.libraries = 'xml2<span class="string">', '</span>z<span class="string">'</span></div><div class="line">spec.frameworks = 'QuartzCore<span class="string">', ‘CoreData'</span></div><div class="line">spec.weak_framework = ‘UserNotifications’</div></pre></td></tr></table></figure>
+<h2 id="静态库转动态库"><a href="#静态库转动态库" class="headerlink" title="静态库转动态库"></a>静态库转动态库</h2><p>一般不推荐这么做，不过把静态库转动态库也是可行的。</p>
+<p>操作的方法是：</p>
+<ul>
+<li>确保该静态库包含全部需要的架构。</li>
+<li>用 Xcode 创建一个 Cocoa Touch Framework 的 project，用来封装静态库。</li>
+<li>把静态库、静态库的头文件正常手动加入到项目中。</li>
+<li>在 Build Settings 中的 Other Linker Flags 中加入 <code>-all_load</code> flag，从而在 link 时把所有静态库中的代码加载进来。</li>
+<li>在 Build Settings 中的 Framework Search Paths 以及 Library Search Paths 中添加静态库所在的路径，从而在 compile 时能找到该静态库。</li>
+<li>在 Build Phase 中的 Link Binary With Libraries 区域加入添加的静态库。</li>
+<li>在 Build Phase 中的 Headers 区域把要暴露的头文件移到 Public。</li>
+<li>根据静态库的接入文档，在工程中链接上需要的其他库、framework。</li>
+<li>到这一步应该编译通过了。</li>
+<li>目前的 Xcode 只会输出 only 模拟器 or only device 架构的动态库，因此为了生成一个可同时被模拟器以及真机使用的动态库，需要输出两次，并用 <code>lipo</code> 工具把架构合并。</li>
+<li>蛋疼的是，当使用这个动态库的工程打包时，又需要用 <code>lipo</code> 工具把不需要的架构去掉（也就是为真机打包时，要去掉模拟器的架构）。</li>
+</ul>
+<p>正是因为需要做这么多额外的工作，因此不推荐这么做。不过，把生成的动态库用 cocoapods 封装的话，cocoapods 在安装时会生成自动去除不需要架构的 build phase。</p>
+<p>这么做有一个风险就是，由于改变了链接库的方式，最后库的资源在 iOS app 中的路径也会改变，如果库的开发者在编写库时取资源的姿势做了简单的假设的话（假设资源肯定在 app 的 main bundle 中），就会取不到资源了。下一章将详细介绍一下在库中取资源的姿势。</p>
+<h2 id="资源的读取"><a href="#资源的读取" class="headerlink" title="资源的读取"></a>资源的读取</h2><p>在 pod 中取资源不能简单假设资源所在的位置，否则会取不到资源。我们直接通过例子来看这个问题。假设有下面这样一个 pod：</p>
+<ul>
+<li>名字叫 <code>MyPod</code></li>
+<li>通过 <code>resources</code> 来指定资源，这是不推荐的做法</li>
+<li>通过 <code>resource_bundles</code> 来指定资源，这是推荐的做法</li>
+<li>包含的资源是名叫 <code>img.png</code> 的图片</li>
+</ul>
+<figure class="highlight ruby"><table><tr><td class="code"><pre><div class="line">s.name = ‘MyPod’</div><div class="line"></div><div class="line"><span class="comment"># 不推荐的做法</span></div><div class="line">s.resources = “<span class="comment">#&#123;PATH_TO_RESOURCE&#125;”</span></div><div class="line"></div><div class="line">s.resource_bundles = &#123; <span class="string">'MyPod'</span> =&gt; <span class="string">"<span class="subst">#&#123;PATH_TO_RESOURCE&#125;</span>"</span> &#125;</div></pre></td></tr></table></figure>
+<p>然后，我们有一个 iOS app 叫做 <code>MyApp</code>，用 3 种姿势来使用这个 pod：</p>
+<ul>
+<li>case 1：在 <code>Podfile</code> 里用 <code>use_frameworks!</code> 来安装 pod（pod 会被编译为动态库）</li>
+<li>case 2：在 <code>Podfile</code> 里不用 <code>use_frameworks!</code> 来安装 pod（pod 会被编译为静态库）</li>
+<li>case 3：在 <code>MyApp</code> 工程里手动建一个名叫 <code>MyHandMadeFramework</code> 的 Cocoa Touch Framework，并通过 pod 把 <code>MyPod</code> 安装在 <code>MyHandMadeFramework</code> 的 target 上，然后 <code>MyApp</code> 手动引入 <code>MyHandMadeFramework</code> 来使用。这种 case 虽然绕了点，但也是完全合理的一种使用姿势，并且资源在这种 case 下所在的位置是比较特别的。</li>
+</ul>
+<h3 id="用-resources-指定资源的情况"><a href="#用-resources-指定资源的情况" class="headerlink" title="用 resources 指定资源的情况"></a>用 <code>resources</code> 指定资源的情况</h3><p>最终 <code>img.png</code> 在3种情况下编译出来的 app 中的路径如下：</p>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><div class="line"><span class="comment">// "case 1"</span></div><div class="line">MyApp.app/Frameworks/MyPod.framework/<span class="selector-tag">img</span><span class="selector-class">.png</span></div><div class="line"><span class="comment">// "case 2"</span></div><div class="line">MyApp.app/<span class="selector-tag">img</span><span class="selector-class">.png</span></div><div class="line"><span class="comment">// "case 3"</span></div><div class="line">MyApp.app/Frameworks/MyHandMadeFramework.framework/<span class="selector-tag">img</span>.png</div></pre></td></tr></table></figure>
+<p>因此，如果在取资源的时候简单地假设资源肯定在 main bundle，用如下姿势去取的话，肯定是不 work 的：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line">[[<span class="built_in">NSBundle</span> mainBundle] pathForResource:<span class="string">@"img"</span> ofType:@“png”];</div></pre></td></tr></table></figure>
+<p>正确的做法是用 <code>bundleForClass</code> 取出 <code>MyPod</code> 的代码所在的 bundle:</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="built_in">NSBundle</span> *bundleContainingPodsCode = [<span class="built_in">NSBundle</span> bundleForClass:[<span class="keyword">self</span> <span class="keyword">class</span>]];</div></pre></td></tr></table></figure>
+<p><code>bundleContainingPodsCode</code> 的路径分别是：</p>
+<figure class="highlight stata"><table><tr><td class="code"><pre><div class="line"><span class="comment">// "case 1"</span></div><div class="line">MyApp.<span class="keyword">app</span>/Frameworks/MyPod.framework/</div><div class="line"><span class="comment">// "case 2"</span></div><div class="line">MyApp.<span class="keyword">app</span>/</div><div class="line"><span class="comment">// "case 3"</span></div><div class="line">MyApp.<span class="keyword">app</span>/Frameworks/MyHandMadeFramework.framework/</div></pre></td></tr></table></figure>
+<p>然后以这个 bundle 的相对路径去取资源就始终能取到正确的资源了：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="built_in">NSString</span> *imgPath = [bundleContainingPodsCode pathForResource:<span class="string">@"img"</span> ofType:@“png”];</div></pre></td></tr></table></figure>
+<h3 id="用-resource-bundles-指定资源的情况"><a href="#用-resource-bundles-指定资源的情况" class="headerlink" title="用 resource_bundles 指定资源的情况"></a>用 <code>resource_bundles</code> 指定资源的情况</h3><p>最终 <code>img.png</code> 在3种情况下编译出来的 app 中的路径如下：</p>
+<figure class="highlight stylus"><table><tr><td class="code"><pre><div class="line"><span class="comment">// "case 1"</span></div><div class="line">MyApp.app/Frameworks/MyPod.framework/MyPod.bundle/<span class="selector-tag">img</span><span class="selector-class">.png</span></div><div class="line"><span class="comment">// "case 2"</span></div><div class="line">MyApp.app/MyPod.bundle/<span class="selector-tag">img</span><span class="selector-class">.png</span></div><div class="line"><span class="comment">// "case 3"</span></div><div class="line">MyApp.app/Frameworks/MyHandMadeFramework.framework/MyPod.bundle/<span class="selector-tag">img</span>.png</div></pre></td></tr></table></figure>
+<p>可以看到这种情况和 <code>resources</code> 的情况区别在于：<code>img.png</code> 被额外放在了名叫 <code>MyPod.bundle</code> 的 bundle 内。因此，取资源的姿势上要额外把这个 bundle 取出来，再用相对路径去取资源：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="built_in">NSBundle</span> *libBundle = [<span class="built_in">NSBundle</span> bundleForClass:[<span class="keyword">self</span> <span class="keyword">class</span>]];</div><div class="line"><span class="built_in">NSString</span> *resourceBundlePath = [[libBundle bundlePath] stringByAppendingPathComponent:<span class="string">@"MyPod.bundle"</span>];</div><div class="line"><span class="built_in">NSBundle</span> *resourceBundle = [<span class="built_in">NSBundle</span> bundleWithPath:resourceBundlePath]; <span class="comment">// 这里应该把 resourceBundle 缓存下来</span></div><div class="line"></div><div class="line"><span class="built_in">NSString</span> *imgPath = [resourceBundle pathForResource:<span class="string">@"img"</span> ofType:@“png”];</div></pre></td></tr></table></figure>
+<p>当然，如果你的 app 的 deployment target 为 iOS 8，那么可以直接用如下这个新的 api 来从 resource bundle 里取图片：</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><div class="line"><span class="built_in">UIImage</span> *img = [<span class="built_in">UIImage</span> imageNamed:<span class="string">@"img"</span> inBundle:resourceBundle compatibleWithTraitCollection:<span class="literal">nil</span>];</div></pre></td></tr></table></figure>
+<hr>
+<p>全文完</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;本文将从两个角度——理论与实践，来介绍 iOS 开发中接触到的动态库、静态库、framework。理论部分会以简单的例子来建立对概念的理解；实践部分则是使用 cocoapods 的一些技巧。&lt;/p&gt;
+&lt;h1 id=&quot;名词&quot;&gt;&lt;a href=&quot;#名词&quot; class=&quot;head
+    
+    </summary>
+    
+      <category term="iOS" scheme="http://mobilists.eleme.io/categories/iOS/"/>
+    
+    
+      <category term="cocoapods" scheme="http://mobilists.eleme.io/tags/cocoapods/"/>
+    
+      <category term="lib" scheme="http://mobilists.eleme.io/tags/lib/"/>
+    
+      <category term="framework" scheme="http://mobilists.eleme.io/tags/framework/"/>
+    
+  </entry>
   
   <entry>
     <title>使用链式调用解决多可选参数接口设计问题</title>
@@ -372,51 +616,52 @@
     <link href="http://mobilists.eleme.io/2016/06/20/%E6%B5%85%E8%B0%88Mantle/"/>
     <id>http://mobilists.eleme.io/2016/06/20/浅谈Mantle/</id>
     <published>2016-06-20T09:12:15.000Z</published>
-    <updated>2017-02-08T07:50:49.000Z</updated>
+    <updated>2017-04-25T09:08:29.000Z</updated>
     
-    <content type="html"><![CDATA[<p>在公司使用<code>Mantle</code>也差不多有一年，其间有痛有笑，难一一道明。使用期间总算积累了一些经验，在此献丑，或能有益于人；由于是一些知识点的汇总，难免拉杂干涩，写的断断续续，行文并不流畅。所有索引都随文给出，不另外附录；建议核心部分，结合代码理解。另如有错漏，祈谅！</p>
-<h1 id="解析过程"><a href="#解析过程" class="headerlink" title="解析过程"></a><font color="#4590a3">解析过程</font></h1><p><code>Mantle</code>的核心类是<code>MTLJSONAdapter</code>，负责整个解析过程。下面以<code>JSON To Object</code>为例粗略介绍一下的解析流程。</p>
-<p><a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L259" target="_blank" rel="external">相关代码见此</a></p>
-<figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line"></div><div class="line">- (<span class="keyword">id</span>)modelFromJSONDictionary:(<span class="built_in">NSDictionary</span> *)JSONDictionary error:(<span class="built_in">NSError</span> **)error &#123;</div><div class="line"><span class="comment">// 开始 处理由一堆相关的class来map同一类字典，少见，可忽略</span></div><div class="line"><span class="comment">// 为了结构清晰，删除了这部分代码</span></div><div class="line"><span class="comment">// 结束 处理由一堆相关的class来map同一类字典，少见，可忽略</span></div><div class="line"></div><div class="line"><span class="comment">// 开始 常规的解析流程</span></div><div class="line">	<span class="built_in">NSMutableDictionary</span> *dictionaryValue = [[<span class="built_in">NSMutableDictionary</span> alloc] initWithCapacity:JSONDictionary.count];</div><div class="line"></div><div class="line">	<span class="keyword">for</span> (<span class="built_in">NSString</span> *propertyKey <span class="keyword">in</span> [<span class="keyword">self</span>.modelClass propertyKeys]) &#123;</div><div class="line"></div><div class="line">    <span class="comment">// 开始 单个property的解析</span></div><div class="line">		<span class="keyword">id</span> JSONKeyPaths = <span class="keyword">self</span>.JSONKeyPathsByPropertyKey[propertyKey];</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (JSONKeyPaths == <span class="literal">nil</span>) <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">		<span class="keyword">id</span> value;</div><div class="line">    <span class="comment">// 开始 花式keypath处理</span></div><div class="line">    <span class="comment">// 同样，这部分代码也省略了</span></div><div class="line">    <span class="comment">// 结束花式keypath处理</span></div><div class="line">		<span class="keyword">if</span> (value == <span class="literal">nil</span>) <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">		<span class="keyword">@try</span> &#123;</div><div class="line">      <span class="comment">// 开始 常规的property解析流程</span></div><div class="line">			<span class="built_in">NSValueTransformer</span> *transformer = <span class="keyword">self</span>.valueTransformersByPropertyKey[propertyKey];</div><div class="line">			<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) &#123;</div><div class="line">				<span class="comment">// Map NSNull -&gt; nil for the transformer, and then back for the</span></div><div class="line">				<span class="comment">// dictionary we're going to insert into.</span></div><div class="line">				<span class="keyword">if</span> ([value isEqual:<span class="built_in">NSNull</span>.null]) value = <span class="literal">nil</span>;</div><div class="line"></div><div class="line">				<span class="keyword">if</span> ([transformer respondsToSelector:<span class="keyword">@selector</span>(transformedValue:success:error:)]) &#123;</div><div class="line">					<span class="keyword">id</span>&lt;<span class="built_in">MTLTransformerErrorHandling</span>&gt; errorHandlingTransformer = (<span class="keyword">id</span>)transformer;</div><div class="line"></div><div class="line">					<span class="built_in">BOOL</span> success = <span class="literal">YES</span>;</div><div class="line">					value = [errorHandlingTransformer transformedValue:value success:&amp;success error:error];</div><div class="line"></div><div class="line">					<span class="keyword">if</span> (!success) <span class="keyword">return</span> <span class="literal">nil</span>;</div><div class="line">				&#125; <span class="keyword">else</span> &#123;</div><div class="line">					value = [transformer transformedValue:value];</div><div class="line">				&#125;</div><div class="line"></div><div class="line">				<span class="keyword">if</span> (value == <span class="literal">nil</span>) value = <span class="built_in">NSNull</span>.null;</div><div class="line">			&#125;</div><div class="line"></div><div class="line">			dictionaryValue[propertyKey] = value;</div><div class="line">      <span class="comment">// 结束 常规的property解析流程</span></div><div class="line">		&#125; <span class="keyword">@catch</span> (<span class="built_in">NSException</span> *ex) &#123;</div><div class="line">			<span class="built_in">NSLog</span>(<span class="string">@"*** Caught exception %@ parsing JSON key path \"%@\" from: %@"</span>, ex, JSONKeyPaths, JSONDictionary);</div><div class="line">		&#125;</div><div class="line">    <span class="comment">// 结束 单个property的解析</span></div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">id</span> model = [<span class="keyword">self</span>.modelClass modelWithDictionary:dictionaryValue error:error];</div><div class="line"></div><div class="line">	<span class="keyword">return</span> [model validate:error] ? model : <span class="literal">nil</span>;</div><div class="line"><span class="comment">// 结束 常规解析流程</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这个函数前面部分是处理类似类簇的一类model，并不是很常见的需求，这里就不展开；接下来就是整个<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L284-L362" target="_blank" rel="external">常规的解析流程</a>, 无非是遍历整个<code>propertyKeys</code>,  依次解析。下面跟踪一遍单个<code>property</code>的解析。</p>
+    <content type="html"><![CDATA[<p>使用<code>Mantle</code>也差不多一年,使用期间总算积累了一些经验，在此不吝献丑，或能有益于人；由于是一些知识点的汇总，难免芜杂，见谅！所有索引都随文给出，不另外附录；建议核心部分，结合代码理解。</p>
+<h2 id="解析过程"><a href="#解析过程" class="headerlink" title="解析过程"></a>解析过程</h2><p><code>Mantle</code>的核心类是<code>MTLJSONAdapter</code>，负责整个解析。下面以<code>JSON To Object</code>为例粗略介绍一下。<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L259" target="_blank" rel="external">相关代码见此</a></p>
+<figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line"></div><div class="line">- (<span class="keyword">id</span>)modelFromJSONDictionary:(<span class="built_in">NSDictionary</span> *)JSONDictionary error:(<span class="built_in">NSError</span> **)error &#123;</div><div class="line"><span class="comment">// 开始 处理由一堆相关的class来map同一类字典，少见，可忽略，为了结构清晰，删除了这部分代码</span></div><div class="line"><span class="comment">// 结束 处理由一堆相关的class来map同一类字典，少见，可忽略</span></div><div class="line"></div><div class="line"><span class="comment">// 开始 常规的解析流程</span></div><div class="line">	<span class="built_in">NSMutableDictionary</span> *dictionaryValue = [[<span class="built_in">NSMutableDictionary</span> alloc] initWithCapacity:JSONDictionary.count];</div><div class="line"></div><div class="line">	<span class="keyword">for</span> (<span class="built_in">NSString</span> *propertyKey <span class="keyword">in</span> [<span class="keyword">self</span>.modelClass propertyKeys]) &#123;</div><div class="line"></div><div class="line">    <span class="comment">// 开始 单个property的解析</span></div><div class="line">		<span class="keyword">id</span> JSONKeyPaths = <span class="keyword">self</span>.JSONKeyPathsByPropertyKey[propertyKey];</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (JSONKeyPaths == <span class="literal">nil</span>) <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">		<span class="keyword">id</span> value;</div><div class="line">    <span class="comment">// 开始 花式keypath处理</span></div><div class="line">    <span class="comment">// 同样，这部分代码也省略了</span></div><div class="line">    <span class="comment">// 结束花式keypath处理</span></div><div class="line">		<span class="keyword">if</span> (value == <span class="literal">nil</span>) <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">		<span class="keyword">@try</span> &#123;</div><div class="line">      <span class="comment">// 开始 常规的property解析流程</span></div><div class="line">			<span class="built_in">NSValueTransformer</span> *transformer = <span class="keyword">self</span>.valueTransformersByPropertyKey[propertyKey];</div><div class="line">			<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) &#123;</div><div class="line">				<span class="comment">// Map NSNull -&gt; nil for the transformer, and then back for the</span></div><div class="line">				<span class="comment">// dictionary we're going to insert into.</span></div><div class="line">				<span class="keyword">if</span> ([value isEqual:<span class="built_in">NSNull</span>.null]) value = <span class="literal">nil</span>;</div><div class="line"></div><div class="line">				<span class="keyword">if</span> ([transformer respondsToSelector:<span class="keyword">@selector</span>(transformedValue:success:error:)]) &#123;</div><div class="line">					<span class="keyword">id</span>&lt;<span class="built_in">MTLTransformerErrorHandling</span>&gt; errorHandlingTransformer = (<span class="keyword">id</span>)transformer;</div><div class="line"></div><div class="line">					<span class="built_in">BOOL</span> success = <span class="literal">YES</span>;</div><div class="line">					value = [errorHandlingTransformer transformedValue:value success:&amp;success error:error];</div><div class="line"></div><div class="line">					<span class="keyword">if</span> (!success) <span class="keyword">return</span> <span class="literal">nil</span>;</div><div class="line">				&#125; <span class="keyword">else</span> &#123;</div><div class="line">					value = [transformer transformedValue:value];</div><div class="line">				&#125;</div><div class="line"></div><div class="line">				<span class="keyword">if</span> (value == <span class="literal">nil</span>) value = <span class="built_in">NSNull</span>.null;</div><div class="line">			&#125;</div><div class="line"></div><div class="line">			dictionaryValue[propertyKey] = value;</div><div class="line">      <span class="comment">// 结束 常规的property解析流程</span></div><div class="line">		&#125; <span class="keyword">@catch</span> (<span class="built_in">NSException</span> *ex) &#123;</div><div class="line">			<span class="built_in">NSLog</span>(<span class="string">@"*** Caught exception %@ parsing JSON key path \"%@\" from: %@"</span>, ex, JSONKeyPaths, JSONDictionary);</div><div class="line">		&#125;</div><div class="line">    <span class="comment">// 结束 单个property的解析</span></div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">id</span> model = [<span class="keyword">self</span>.modelClass modelWithDictionary:dictionaryValue error:error];</div><div class="line"></div><div class="line">	<span class="keyword">return</span> [model validate:error] ? model : <span class="literal">nil</span>;</div><div class="line"><span class="comment">// 结束 常规解析流程</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个函数，前面部分是处理类似类簇的一类model，并不是很常见的需求，就不展开了；接下来就是整个<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L284-L362" target="_blank" rel="external">常规的解析流程</a>, 无非是遍历整个<code>propertyKeys</code>,  依次解析。</p>
+<p>下面跟踪一遍单个<code>property</code>的解析。</p>
 <blockquote>
-<p>单个<code>property</code>的解析前面一小半是处理花式<code>keypath</code>的写法，无关大体。真正的解析其实就是这<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L316-L336" target="_blank" rel="external">20行代码</a>。 处理<code>keypath</code>拿到单个<code>property</code>对应的<code>JSON Value</code>, 然后通过<code>valueTransformersByPropertyKey</code>取出对应transformer，转化<code>Value</code>为相应的格式。单个<code>property</code>的解析完成。</p>
+<p>单个<code>property</code>的解析前面一小半是处理花式<code>keypath</code>的写法，无关大体。真正的解析其实就是这<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L316-L336" target="_blank" rel="external">20行代码</a>。 处理<code>keypath</code>拿到单个<code>property</code>对应的<code>JSON Value</code>, 然后通过<code>valueTransformersByPropertyKey</code>取出对应transformer，转化<code>Value</code>为相应的格式。单个<code>property</code>的解析即完成。</p>
 </blockquote>
-<p>解析完所有<code>propertyKeys</code>，就会通过转化后的dic集由<code>modelWithDictionary:</code>去初始化<code>ModelClass</code>，这个过程会走一下<code>validate</code>流程然后通过<code>KVC</code>去设置<code>property</code>。</p>
-<h1 id="三类Transformer"><a href="#三类Transformer" class="headerlink" title="三类Transformer"></a><font color="#4590a3">三类Transformer</font></h1><p>综上可以看出整个解析流程其实非常清晰明，问题核心在<code>transformer</code>。<code>transformer</code>的生成<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L365" target="_blank" rel="external">相关代码在此</a>。</p>
+<p>解析完所有<code>propertyKeys</code>，就会通过转化后的dic集由<code>modelWithDictionary:</code>去初始化<code>ModelClass</code>，这个过程会走一下<code>validate</code>流程最后通过<code>KVC</code>去设置<code>property</code>。这就是整个解析过程，当然这里忽略掉了类型不匹配和validate不通过导致解析失败，返回error的过程。</p>
+<h2 id="三类Transformer"><a href="#三类Transformer" class="headerlink" title="三类Transformer"></a>三类Transformer</h2><p>综上可以看出整个解析流程其实非常清晰明了的，问题核心在<code>transformer</code>一个<code>JSON Value</code>到<code>Custom Object</code>。下面看一下<code>transformer</code>的<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/MTLJSONAdapter.m#L365" target="_blank" rel="external">相关代码</a>。</p>
 <figure class="highlight objectivec"><table><tr><td class="code"><pre><div class="line">+ (<span class="built_in">NSDictionary</span> *)valueTransformersForModelClass:(Class)modelClass &#123;</div><div class="line">	<span class="built_in">NSParameterAssert</span>(modelClass != <span class="literal">nil</span>);</div><div class="line">	<span class="built_in">NSParameterAssert</span>([modelClass conformsToProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">MTLJSONSerializing</span>)]);</span></div><div class="line"></div><div class="line">	<span class="built_in">NSMutableDictionary</span> *result = [<span class="built_in">NSMutableDictionary</span> dictionary];</div><div class="line"></div><div class="line">	<span class="keyword">for</span> (<span class="built_in">NSString</span> *key <span class="keyword">in</span> [modelClass propertyKeys]) &#123;</div><div class="line">    <span class="comment">// keyTransformer 的生成</span></div><div class="line">		SEL selector = <span class="built_in">MTLSelectorWithKeyPattern</span>(key, <span class="string">"JSONTransformer"</span>);</div><div class="line">		<span class="keyword">if</span> ([modelClass respondsToSelector:selector]) &#123;</div><div class="line">			IMP imp = [modelClass methodForSelector:selector];</div><div class="line">			<span class="built_in">NSValueTransformer</span> * (*function)(<span class="keyword">id</span>, SEL) = (__typeof__(function))imp;</div><div class="line">			<span class="built_in">NSValueTransformer</span> *transformer = function(modelClass, selector);</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) result[key] = transformer;</div><div class="line"></div><div class="line">			<span class="keyword">continue</span>;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		<span class="keyword">if</span> ([modelClass respondsToSelector:<span class="keyword">@selector</span>(JSONTransformerForKey:)]) &#123;</div><div class="line">			<span class="built_in">NSValueTransformer</span> *transformer = [modelClass JSONTransformerForKey:key];</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) &#123;</div><div class="line">				result[key] = transformer;</div><div class="line">				<span class="keyword">continue</span>;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		objc_property_t property = class_getProperty(modelClass, key.UTF8String);</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (property == <span class="literal">NULL</span>) <span class="keyword">continue</span>;</div><div class="line"></div><div class="line">		mtl_propertyAttributes *attributes = mtl_copyPropertyAttributes(property);</div><div class="line">		@onExit &#123;</div><div class="line">			free(attributes);</div><div class="line">		&#125;;</div><div class="line"></div><div class="line">		<span class="built_in">NSValueTransformer</span> *transformer = <span class="literal">nil</span>;</div><div class="line">    <span class="comment">// type transformer 的生成</span></div><div class="line">		<span class="keyword">if</span> (*(attributes-&gt;type) == *(<span class="keyword">@encode</span>(<span class="keyword">id</span>))) &#123;</div><div class="line">			Class propertyClass = attributes-&gt;objectClass;</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (propertyClass != <span class="literal">nil</span>) &#123;</div><div class="line">				transformer = [<span class="keyword">self</span> transformerForModelPropertiesOfClass:propertyClass];</div><div class="line">			&#125;</div><div class="line"></div><div class="line"></div><div class="line">			<span class="comment">// For user-defined MTLModel, try parse it with dictionaryTransformer.</span></div><div class="line">			<span class="keyword">if</span> (<span class="literal">nil</span> == transformer &amp;&amp; [propertyClass conformsToProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">MTLJSONSerializing</span>)]) </span>&#123;</div><div class="line">				transformer = [<span class="keyword">self</span> dictionaryTransformerWithModelClass:propertyClass];</div><div class="line">			&#125;</div><div class="line"></div><div class="line">			<span class="keyword">if</span> (transformer == <span class="literal">nil</span>) transformer = [<span class="built_in">NSValueTransformer</span> mtl_validatingTransformerForClass:propertyClass ?: <span class="built_in">NSObject</span>.class];</div><div class="line">		&#125; <span class="keyword">else</span> &#123;</div><div class="line">			transformer = [<span class="keyword">self</span> transformerForModelPropertiesOfObjCType:attributes-&gt;type] ?: [<span class="built_in">NSValueTransformer</span> mtl_validatingTransformerForClass:<span class="built_in">NSValue</span>.class];</div><div class="line">		&#125;</div><div class="line"></div><div class="line">		<span class="keyword">if</span> (transformer != <span class="literal">nil</span>) result[key] = transformer;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="keyword">return</span> result;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>按性质大概可以分为三类<code>transformer</code>：</p>
-<h2 id="keyTransformer"><a href="#keyTransformer" class="headerlink" title="keyTransformer"></a><font color="#5F9EA0">keyTransformer</font></h2><p>key为<code>property name</code>。</p>
+<p>按性质我把<code>transformer</code>分为三类：</p>
+<h3 id="keyTransformer"><a href="#keyTransformer" class="headerlink" title="keyTransformer"></a>keyTransformer</h3><p>key即为<code>property name</code>。</p>
 <blockquote>
-<p>首先根据<code>key</code>动态构造的<code>SEL</code>(<code>keyJSONTransformer</code>)去获取；未果则转入<code>JSONTransformerForKey:(NSSString *)key</code>获取；未果则继续获取第二类transformer。目前这类transformer主要集中在对<code>NSArray</code>（NSArray目前业界好像也有一些讨巧的做法，后面介绍）和一些非常规的<code>transformer</code>的处理，因为此处理论上你可以提供任意类型的<code>transformer</code>来满足复杂多样的需求。</p>
+<p>首先根据key动态构造的<code>keyJSONTransformer</code>去获取自定义的<code>transformer</code>；未果则转入<code>JSONTransformerForKey:(NSSString *)key</code>获取；未果fallback到<code>typeTransformer</code>。这类<code>transformer</code>主要用于对一个指定的<code>property</code>构造一个特定的转换，可以满足任意类型的定制。</p>
 </blockquote>
-<h2 id="type-transformer"><a href="#type-transformer" class="headerlink" title="type transformer"></a><font color="#5F9EA0">type transformer</font></h2><p><code>type</code>即为通过runtime获取<code>property</code>的类型，对象类型和基础类型会有不同的处理。</p>
-<h3 id="对象类型"><a href="#对象类型" class="headerlink" title="对象类型"></a><font color="#35c0a3">对象类型</font></h3><blockquote>
+<h3 id="typeTransformer"><a href="#typeTransformer" class="headerlink" title="typeTransformer"></a>typeTransformer</h3><p><code>type</code>即为<code>property</code>的类型，运行时获取，对象类型和基础类型处理上会有一定差别。</p>
+<h4 id="对象类型"><a href="#对象类型" class="headerlink" title="对象类型"></a>对象类型</h4><blockquote>
 <p>先根据<code>transformerForModelPropertiesOfClass:</code>去获取针对一些预置的,未实现<code>MTLJSONSerializing</code>类型的<code>transformer</code>,比如NSURL，NSDate（目前Mantle里面只实现了NSURL,至于为什么没有实现别的类型见这个<a href="https://github.com/Mantle/Mantle/issues/147" target="_blank" rel="external">issue</a>）；未果,当前<code>Class</code>若实现<code>MTLJSONSerializing</code>, 则为它生成一个transformer，这个是我们应用中的大部分场景，即一大堆自定义的<code>Model</code>，我们不需要做任何其他的事，只需要声明<code>property</code>时写上对应的类型就可以了，是不是人心大快！仍旧未果，就会通过<code>mtl_validatingTransformerForClass:</code>去生成一个<code>validate</code>的transformer（这类transformer的作用后面详述）。</p>
 </blockquote>
-<h3 id="基础类型"><a href="#基础类型" class="headerlink" title="基础类型"></a><font color="#35c0a3">基础类型</font></h3><blockquote>
+<h4 id="基础类型"><a href="#基础类型" class="headerlink" title="基础类型"></a>基础类型</h4><blockquote>
 <p>比较简单。首先通过<code>transformerForModelPropertiesOfObjCType:</code>获取一个<code>transformer</code>;未果也是生成一个<code>validate</code>的<code>transformer</code>。</p>
 </blockquote>
-<h2 id="KVC也算一类transformer"><a href="#KVC也算一类transformer" class="headerlink" title="KVC也算一类transformer"></a><font color="#5F9EA0">KVC也算一类transformer</font></h2><blockquote>
-<p>当然除了这两类的<code>transformer</code>，因为最终<code>setValue</code>时会调用<code>KVC</code>去完成，<code>KVC</code>对基础类型的<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/KeyValueCoding/Articles/DataTypes.html#//apple_ref/doc/uid/20002171-BAJEAIEE" target="_blank" rel="external">自动解包</a>，也可以算作是一类<code>transformer</code>。</p>
+<h3 id="KVC也算一类transformer"><a href="#KVC也算一类transformer" class="headerlink" title="KVC也算一类transformer"></a>KVC也算一类transformer</h3><blockquote>
+<p>最终<code>setValue</code>时会调用<code>KVC</code>去完成，<code>KVC</code>对基础类型有个<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/KeyValueCoding/Articles/DataTypes.html#//apple_ref/doc/uid/20002171-BAJEAIEE" target="_blank" rel="external">自动解包</a>，也可以算作是一类<code>transformer</code>。</p>
 </blockquote>
-<h1 id="Transformer的使用"><a href="#Transformer的使用" class="headerlink" title="Transformer的使用"></a><font color="#4590a3">Transformer的使用</font></h1><h2 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a><font color="#5F9EA0">基本使用</font></h2><p>结合上面的解析和<code>transformer</code>的生成流程，可以看出我们的生活确实简单了。首先在<code>property</code>里面声明好属性，然后通过<code>JSONKeyPathsByPropertyKey</code>做好<code>property</code>和<code>json key</code>的映射关系，基本上整个<code>Model</code>基本就完成了。</p>
-<h2 id="Array的处理"><a href="#Array的处理" class="headerlink" title="Array的处理"></a><font color="#5F9EA0">Array的处理</font></h2><p>但这个过程有个例外，就是对<code>NSArray</code>的处理。目前OC里面的<code>Array</code>泛型是编译时的，运行时获取不到数组中对象类型，这就需要我们通过通过<code>arrayTransformerWithModelClass：</code>构造一个上面的<code>typeTransformer</code>返回。但直到某一天看到有人给<code>YYModel</code>提了个<a href="https://github.com/ibireme/YYModel/issues/79" target="_blank" rel="external">issue</a>，发现这个问题似乎已经有了一个可能的解法。构造一个与<code>Model Class</code>同名的<code>protocol</code>让<code>NSArray</code> conform，这时通过<code>runtime</code>就可以取到这个<code>protocol name</code>，作为<code>Model Class</code>的name构造一个<code>type transformer</code>。这个feature JSONModel应该支持了一段时间，目前<a href="https://github.com/ibireme/YYModel/releases/tag/1.0.4" target="_blank" rel="external">YY已经集成</a>，<code>Mantle</code>何时支持，拭目以待！</p>
-<h2 id="KVC里的小天地"><a href="#KVC里的小天地" class="headerlink" title="KVC里的小天地"></a><font color="#5F9EA0">KVC里的小天地</font></h2><p>解析完成后会调用KVC去setValue。KVC会对基础类型会做<a href="https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/KeyValueCoding/Articles/DataTypes.html#//apple_ref/doc/uid/20002171-BAJEAIEE" target="_blank" rel="external">自动wrapping和unwrapping</a>，省了很多事，但有个特性也需要注意。就是<code>- (void)setValue:(nullable id)value forKey:(NSString *)key</code>当key是基础类型而value是NSNull时会调用<code>- (void)setNilValueForKey:(NSString *)key</code>, 默认这个会崩溃，但Mantle并没有给你处理这种情况…所以需要我们在给基类给一个默认实现。</p>
-<h2 id="type-transformer是什么"><a href="#type-transformer是什么" class="headerlink" title="type transformer是什么"></a><font color="#5F9EA0">type transformer是什么</font></h2><p>从上面我们可以看到系统已经为NSURL添加了默认的transformer,即<code>NSURLJSONTransformer</code>，默认会对非空字符串调用<a href="https://github.com/Mantle/Mantle/blob/master/Mantle/NSValueTransformer%2BMTLPredefinedTransformerAdditions.m#L41" target="_blank" rel="external">直接调用<code>[NSURL URLWithString:str]</code>构造字符串</a>。有个问题是在字符串长度为0的情况下，这个函数还是会返回内容为空的URL对象。很多业务逻辑如果没有考虑到这一点是要犯错误的。对于UIColor，NSDate这类对象，如果整个应用的格式是统一的，按理我们也可以加上自己的这类transformer，这个顺理成章毋庸置疑。</p>
-<h2 id="巧用type-transformer"><a href="#巧用type-transformer" class="headerlink" title="巧用type transformer"></a><font color="#5F9EA0">巧用type transformer</font></h2><p>结合<code>type transformer</code>其实我们还可以做一些更巧妙的事情。有一些类似ID的主键，服务器因为存储的是整形，出于方便和效率方面的考虑，服务端会直接返回一个整形的数据。但客户端在使用类型一直会把这个类型当做字符串使用，很多情况下就不免加上stringValue来转换类型或者加上显示的keyTransformer去显示转化。这时其实可以考虑加上一个NSStringJSONTransformer,转化可能的NSNumber为string，可谓一劳永逸。但这有个问题是，这个Model在转化为JSON时会丢失掉它原始的类型，但回传的需求，在应用中使用的太少，基本就忽略。</p>
-<h1 id="Validate"><a href="#Validate" class="headerlink" title="Validate"></a><font color="#4590a3">Validate</font></h1><p>validate从性质上也可以分为两类，一类为校验JSON数据是否返回了约定的格式，另一类校验返回的数据是否业务场景。</p>
-<h2 id="数据格式的校验（Mantle世界的麦田守望者"><a href="#数据格式的校验（Mantle世界的麦田守望者" class="headerlink" title="数据格式的校验（Mantle世界的麦田守望者)"></a><font color="#5F9EA0">数据格式的校验（Mantle世界的麦田守望者)</font></h2><p>校验数据格式的工作基本有上文提到的<code>validate transformer</code>提供，这个<code>transformer</code>位置重要，堪比麦田守望者。它会校验此时的<code>json object</code>是否是符合声明的类型，不是则及时报错。如果没有这个<code>transformer</code>，试想我们预期是<code>NSString</code>而拿到一个<code>NSNumber</code>会发生什么！数据格式错误往往是服务器出现了什么重大错误，或者http请求被恶意劫持，比较难以根治和解决，有了这个检验至少可以显著降低客户端的崩溃率。</p>
-<h2 id="业务逻辑的校验（后端不哭-）"><a href="#业务逻辑的校验（后端不哭-）" class="headerlink" title="业务逻辑的校验（后端不哭..）"></a><font color="#5F9EA0">业务逻辑的校验（后端不哭..）</font></h2><p>业务逻辑的校验需要我们自己实现，返回的数据此时虽已确保类型无误。但我们还是不能确保它就是符合业务规范的，比如说关键的主键却为空，或者关联属性出现互相矛盾的结果。这时我们就需要我们根据业务需求去实现validate。理论上当然是逻辑越严密越好，但这时会导致代码异常繁琐，现实中一般做的并不多。因为这类错误，基本是服务端程序员的逻辑错误，所以只要他们能即使改正，客户端是可保无虞。</p>
-<h3 id="巧妙解决非空的判断"><a href="#巧妙解决非空的判断" class="headerlink" title="巧妙解决非空的判断"></a><font color="#35c0a3">巧妙解决非空的判断</font></h3><p>结合上面的NSArray的处理，其实我们也可以实现一个简单的Not NULL的实现，声明一个<code>NotNUll</code>的protocol，非空<code>NSString</code>，<code>NSNumber</code>属性conform一下。然后通过<code>runtime</code>去validate相关属性，是不是感觉清晰了不少…</p>
-<h1 id="一些实践"><a href="#一些实践" class="headerlink" title="一些实践"></a><font color="#4590a3">一些实践</font></h1><h2 id="写好keypath"><a href="#写好keypath" class="headerlink" title="写好keypath"></a><font color="#5F9EA0">写好keypath</font></h2><p>keypath推荐结合用<a href="https://github.com/jspahrsummers/libextobjc/tree/master/extobjc" target="_blank" rel="external">extobjc</a>结合code snippets，编译时检查，值得拥有。</p>
-<h2 id="加入默认值"><a href="#加入默认值" class="headerlink" title="加入默认值"></a><font color="#5F9EA0">加入默认值</font></h2><p>有些时候，默认值是非空或0，可以在MTModel的基类里面的<code>- (instancetype)initWithDictionary:(NSDictionary *)dictionary error:(NSError **)error {</code>里面加入一些默认值的处理。</p>
-<p>算了，打住，不写了。</p>
+<h2 id="Transformer的使用"><a href="#Transformer的使用" class="headerlink" title="Transformer的使用"></a>Transformer的使用</h2><h3 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h3><p>结合上面的解析和<code>transformer</code>的生成流程，可以看出我们的生活确实简单了。首先在<code>property</code>里面声明好属性，然后通过<code>JSONKeyPathsByPropertyKey</code>做好<code>property</code>和<code>json key</code>的映射关系，基本上整个<code>Model</code>基本就完成了。</p>
+<h3 id="Array的处理"><a href="#Array的处理" class="headerlink" title="Array的处理"></a>Array的处理</h3><p>但这个过程有个例外，就是对<code>NSArray</code>的处理。目前OC里面的<code>Array</code>泛型是编译时的，运行时获取不到数组中对象类型，这就需要我们通过通过<code>arrayTransformerWithModelClass：</code>构造一个上面的<code>typeTransformer</code>返回。但直到某一天看到有人给<code>YYModel</code>提了个<a href="https://github.com/ibireme/YYModel/issues/79" target="_blank" rel="external">issue</a>，发现这个问题似乎已经有了一个可能的解法。构造一个与<code>Model Class</code>同名的<code>protocol</code>让<code>NSArray</code> conform，这时通过<code>runtime</code>就可以取到这个<code>protocol name</code>，作为<code>Model Class</code>的name构造一个<code>type transformer</code>。这个feature JSONModel应该支持了一段时间，目前<a href="https://github.com/ibireme/YYModel/releases/tag/1.0.4" target="_blank" rel="external">YY已经集成</a>，<code>Mantle</code>何时支持，拭目以待！</p>
+<h3 id="KVC里的小烦恼"><a href="#KVC里的小烦恼" class="headerlink" title="KVC里的小烦恼"></a>KVC里的小烦恼</h3><p>解析完成后会调用KVC去setValue。但KVC有个特性需要注意下，<code>- (void)setValue:(nullable id)value forKey:(NSString *)key</code>当key是基础类型而value是NSNull时会调用<code>- (void)setNilValueForKey:(NSString *)key</code>, 默认这个会崩溃，但Mantle并没有给你处理这种情况…所以需要我们在给基类给一个默认实现。</p>
+<h3 id="typeTransformer有什么用"><a href="#typeTransformer有什么用" class="headerlink" title="typeTransformer有什么用"></a>typeTransformer有什么用</h3><p>从上面我们可以看到系统已经为NSURL添加了默认的transformer,即<code>NSURLJSONTransformer</code>。对于UIColor，NSDate这类对象，如果整个应用的格式是统一的，按理我们也可以加上对这类对象的默认<code>transformer</code>，使用方只要声明好自己好<code>property</code>的类型就可以了。</p>
+<h3 id="巧用typeTransformer"><a href="#巧用typeTransformer" class="headerlink" title="巧用typeTransformer"></a>巧用typeTransformer</h3><p>结合<code>type transformer</code>其实我们还可以做一些更巧妙的事情。有一些类似ID的主键，服务器因为存储的是整形，出于方便和效率方面的考虑，服务端会直接返回一个整形的数据。但客户端在使用类型一直会把这个类型当做字符串使用，很多情况下就不免加上stringValue来转换类型或者加上显示的keyTransformer去显示转化。这时其实可以考虑加上一个NSStringJSONTransformer,转化可能的NSNumber为string，可谓一劳永逸。但这个问题方法也有个弊端就是丢掉了<code>property</code>原始的类型，如果需要再次把model序列化成对应的JSON就尴尬了，不过目前在应用中还算使用较少，基本就忽略。</p>
+<h2 id="Validate"><a href="#Validate" class="headerlink" title="Validate"></a>Validate</h2><p>validate从性质上也可以分为两类，一类为校验JSON数据是否返回了约定的格式，另一类校验返回的数据是否业务场景。</p>
+<h3 id="数据格式的校验（Mantle世界的麦田守望者"><a href="#数据格式的校验（Mantle世界的麦田守望者" class="headerlink" title="数据格式的校验（Mantle世界的麦田守望者)"></a>数据格式的校验（Mantle世界的麦田守望者)</h3><p>校验数据格式的工作基本有上文提到的<code>validate transformer</code>提供,如果是提供了自定义的<code>transformer</code>, 则需要自己提供对原始格式的严格检验。这个<code>transformer</code>位置重要，堪比麦田守望者。它会校验此时的<code>json object</code>是否是符合声明的类型，不是则及时报错。如果没有这个<code>transformer</code>，试想我们预期是<code>NSString</code>而拿到一个<code>NSNumber</code>会发生什么！数据格式错误往往是服务器出现了什么重大错误，或者http请求被恶意劫持，比较难以根治和解决，有了这个检验至少可以显著降低客户端的崩溃率。</p>
+<h3 id="业务逻辑的校验"><a href="#业务逻辑的校验" class="headerlink" title="业务逻辑的校验"></a>业务逻辑的校验</h3><p>业务逻辑的校验需要我们自己实现，返回的数据此时虽已确保类型无误。但我们还是不能确保它就是符合业务规范的，比如说关键的主键却为空，或者关联属性出现互相矛盾的结果。这时我们就需要我们根据业务需求去实现validate。理论上当然是逻辑越严密越好，但这时会导致代码异常繁琐，现实中一般做的并不多。因为这类错误，基本是服务端程序员的逻辑错误，所以只要他们能即使改正，客户端是可保无虞。</p>
+<h4 id="巧妙解决非空的判断"><a href="#巧妙解决非空的判断" class="headerlink" title="巧妙解决非空的判断"></a>巧妙解决非空的判断</h4><p>结合上面的NSArray的处理，其实我们也可以实现一个简单的Not NULL的实现，声明一个<code>NotNUll</code>的protocol，非空<code>NSString</code>，<code>NSNumber</code>属性conform一下。然后通过<code>runtime</code>去validate相关属性，是不是感觉清晰了不少…</p>
+<h2 id="一些实践"><a href="#一些实践" class="headerlink" title="一些实践"></a>一些实践</h2><h3 id="写好keypath"><a href="#写好keypath" class="headerlink" title="写好keypath"></a>写好keypath</h3><p>keypath推荐结合用<a href="https://github.com/jspahrsummers/libextobjc/tree/master/extobjc" target="_blank" rel="external">extobjc</a>结合code snippets，编译时检查，值得拥有。</p>
+<h3 id="加入默认值"><a href="#加入默认值" class="headerlink" title="加入默认值"></a>加入默认值</h3><p>有些时候，默认值是非空或0，可以在MTModel的基类里面的<code>- (instancetype)initWithDictionary:(NSDictionary *)dictionary error:(NSError **)error {</code>里面加入一些默认值的处理。</p>
+<p>好吧，不写了。</p>
 ]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;在公司使用&lt;code&gt;Mantle&lt;/code&gt;也差不多有一年，其间有痛有笑，难一一道明。使用期间总算积累了一些经验，在此献丑，或能有益于人；由于是一些知识点的汇总，难免拉杂干涩，写的断断续续，行文并不流畅。所有索引都随文给出，不另外附录；建议核心部分，结合代码理解。另如有
+      &lt;p&gt;使用&lt;code&gt;Mantle&lt;/code&gt;也差不多一年,使用期间总算积累了一些经验，在此不吝献丑，或能有益于人；由于是一些知识点的汇总，难免芜杂，见谅！所有索引都随文给出，不另外附录；建议核心部分，结合代码理解。&lt;/p&gt;
+&lt;h2 id=&quot;解析过程&quot;&gt;&lt;a href=&quot;#解析
     
     </summary>
     

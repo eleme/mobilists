@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="initial-scale=1, maximum-scale=1">
-  <meta name="description" content="这里是饿了么用户端移动组的技术博客，我们保证至少每个月都会有一篇分享">
-  <meta name="keywords" content="eleme, 饿了么, 移动组, 技术博客, Android, iOS">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="这里是饿了么用户端移动组的技术博客，我们保证至少每个月都会有一篇分享">
+    <meta name="keywords" content="eleme, 饿了么, 移动组, 技术博客, Android, iOS">
     <link rel="apple-touch-icon" href="/img/default_logo.png">
-  <title>Eleme Mobilists</title>
+    <link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/atom-one-light.min.css" rel="stylesheet">
+    <title>Eleme Mobilists</title>
   
     <!-- stylesheets list from config.yml -->
     
@@ -19,198 +21,213 @@
 </head>
 <body>
 
-<div id="wrapper">
-    <div id="eleme-menu-outer">
-        <div id="eleme-menu-wrapper">
-            <a href="/"><img src="/img/eleme-logo.png"></a>
-                <div id="menu-inner">
+<div class="container-fluid eleme-wrapper">
+    <nav class="navbar navbar-default eleme-navbar">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">
+                    <img alt="eleme" src="/img/eleme-logo.png" style="height: 20px">
+                </a>
+                <button class="navbar-toggle" data-toggle="collapse" href="#eleme-navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse" id="eleme-navbar-collapse">
+            <ul class="nav navbar-nav navbar-right">
                 
-                <a href="/">主页</a>
+                <li><a href="/archives">归档</a></li>
                 
-                <a href="/archives">归档</a>
+                <li><a href="/about">关于</a></li>
                 
-                <a href="/about">关于</a>
+                <li><a href="/friend">友链</a></li>
                 
-                <a href="/atom.xml">订阅</a>
+                <li><a href="/atom.xml">订阅</a></li>
                 
+            </ul>
             </div>
         </div>
-    </div>
 
-    <div id="eleme-content-outer">
+    </nav>
+
+    <div class="eleme-body">
         <div id="content-inner">
             
 
 
-  <div id="recent-posts">
+  <div id="recent-posts" class="container">
     <p class="recent-posts-hint">最新文章</p>
     
-      <div class="recent-post-item">
-        <a href="/2017/01/11/使用链式调用解决多可选参数接口设计问题/" class="recent-posts-title">使用链式调用解决多可选参数接口设计问题</a>
+      <div class="row recent-post-row">
+        <a href="/2017/04/21/移动组博客的选型和构建/" class="col-md-8 recent-posts-title">移动组博客的选型和构建</a>
+          <p class="col-md-8 recent-posts-meta">
         
-          <br>
-          <p class="release">发表于
+          发表于
+          <time datetime="2017-04-21T10:32:25.000Z">
+            2017-04-21
+          </time>
+        
+        
+          authored by stephenwzl
+        
+          </p>
+      </div>
+    
+      <div class="row recent-post-row">
+        <a href="/2017/02/28/iOS-Libs-与-Frameworks-的理解和使用/" class="col-md-8 recent-posts-title">iOS Libs 与 Frameworks 的理解和使用</a>
+          <p class="col-md-8 recent-posts-meta">
+        
+          发表于
+          <time datetime="2017-02-28T05:31:03.000Z">
+            2017-02-28
+          </time>
+        
+        
+          authored by axl411
+        
+          </p>
+      </div>
+    
+      <div class="row recent-post-row">
+        <a href="/2017/01/11/使用链式调用解决多可选参数接口设计问题/" class="col-md-8 recent-posts-title">使用链式调用解决多可选参数接口设计问题</a>
+          <p class="col-md-8 recent-posts-meta">
+        
+          发表于
           <time datetime="2017-01-11T14:25:00.000Z">
             2017-01-11
           </time>
+        
+        
+          authored by axl411
+        
           </p>
-        
-        
-          <span class="author">| authored by axl411</span>
-        
       </div>
     
-      <div class="recent-post-item">
-        <a href="/2016/09/01/Amigo 源码解读/" class="recent-posts-title">Amigo 源码解读</a>
+      <div class="row recent-post-row">
+        <a href="/2016/09/01/Amigo 源码解读/" class="col-md-8 recent-posts-title">Amigo 源码解读</a>
+          <p class="col-md-8 recent-posts-meta">
         
-          <br>
-          <p class="release">发表于
+          发表于
           <time datetime="2016-09-01T09:18:09.000Z">
             2016-09-01
           </time>
+        
+        
+          authored by canaan
+        
           </p>
-        
-        
-          <span class="author">| authored by canaan</span>
-        
       </div>
     
-      <div class="recent-post-item">
-        <a href="/2016/08/26/terminator/" class="recent-posts-title">Amigo---Android hotfix terminator</a>
+      <div class="row recent-post-row">
+        <a href="/2016/08/26/terminator/" class="col-md-8 recent-posts-title">Amigo---Android hotfix terminator</a>
+          <p class="col-md-8 recent-posts-meta">
         
-          <br>
-          <p class="release">发表于
+          发表于
           <time datetime="2016-08-26T04:00:00.000Z">
             2016-08-26
           </time>
+        
+        
+          authored by JackCho
+        
           </p>
-        
-        
-          <span class="author">| authored by JackCho</span>
-        
       </div>
     
-      <div class="recent-post-item">
-        <a href="/2016/06/20/浅谈Mantle/" class="recent-posts-title">浅谈Mantle</a>
+      <div class="row recent-post-row">
+        <a href="/2016/06/20/浅谈Mantle/" class="col-md-8 recent-posts-title">浅谈Mantle</a>
+          <p class="col-md-8 recent-posts-meta">
         
-          <br>
-          <p class="release">发表于
+          发表于
           <time datetime="2016-06-20T09:12:15.000Z">
             2016-06-20
           </time>
+        
+        
           </p>
-        
-        
       </div>
     
-      <div class="recent-post-item">
-        <a href="/2016/04/12/ReactiveCocoa实践/" class="recent-posts-title">ReactiveCocoa实践</a>
+      <div class="row recent-post-row">
+        <a href="/2016/04/12/ReactiveCocoa实践/" class="col-md-8 recent-posts-title">ReactiveCocoa实践</a>
+          <p class="col-md-8 recent-posts-meta">
         
-          <br>
-          <p class="release">发表于
+          发表于
           <time datetime="2016-04-12T03:57:32.000Z">
             2016-04-12
           </time>
+        
+        
+          authored by zhungxd
+        
           </p>
-        
-        
-          <span class="author">| authored by zhungxd</span>
-        
       </div>
     
-      <div class="recent-post-item">
-        <a href="/2016/03/28/饿了么插件化开发实践（一）/" class="recent-posts-title">饿了么Android插件化开发实践（一）</a>
+      <div class="row recent-post-row">
+        <a href="/2016/03/28/饿了么插件化开发实践（一）/" class="col-md-8 recent-posts-title">饿了么Android插件化开发实践（一）</a>
+          <p class="col-md-8 recent-posts-meta">
         
-          <br>
-          <p class="release">发表于
+          发表于
           <time datetime="2016-03-28T09:18:09.000Z">
             2016-03-28
           </time>
+        
+        
+          authored by JackCho
+        
           </p>
-        
-        
-          <span class="author">| authored by JackCho</span>
-        
       </div>
     
-      <div class="recent-post-item">
-        <a href="/2016/03/15/用UIKit-Dynamics模仿UIScrollView/" class="recent-posts-title">用UIKit Dynamics模仿UIScrollView</a>
+      <div class="row recent-post-row">
+        <a href="/2016/03/15/用UIKit-Dynamics模仿UIScrollView/" class="col-md-8 recent-posts-title">用UIKit Dynamics模仿UIScrollView</a>
+          <p class="col-md-8 recent-posts-meta">
         
-          <br>
-          <p class="release">发表于
+          发表于
           <time datetime="2016-03-15T10:46:06.000Z">
             2016-03-15
           </time>
+        
+        
+          authored by PhilCai
+        
           </p>
-        
-        
-          <span class="author">| authored by PhilCai</span>
-        
       </div>
     
-      <div class="recent-post-item">
-        <a href="/2016/02/25/android-APP-瘦身/" class="recent-posts-title">android APP 瘦身</a>
+      <div class="row recent-post-row">
+        <a href="/2016/02/25/android-APP-瘦身/" class="col-md-8 recent-posts-title">android APP 瘦身</a>
+          <p class="col-md-8 recent-posts-meta">
         
-          <br>
-          <p class="release">发表于
+          发表于
           <time datetime="2016-02-25T09:18:09.000Z">
             2016-02-25
           </time>
+        
+        
+          authored by JackCho
+        
           </p>
-        
-        
-          <span class="author">| authored by JackCho</span>
-        
-      </div>
-    
-      <div class="recent-post-item">
-        <a href="/2016/02/12/详解-iOS-8-UIPresentationController-custom-presentation/" class="recent-posts-title">详解 iOS 8 `UIPresentationController` Custom Presentation</a>
-        
-          <br>
-          <p class="release">发表于
-          <time datetime="2016-02-12T05:28:40.000Z">
-            2016-02-12
-          </time>
-          </p>
-        
-        
-          <span class="author">| authored by axl411</span>
-        
-      </div>
-    
-      <div class="recent-post-item">
-        <a href="/2016/01/10/突破微信跳转限制－Universal-Links那些坑/" class="recent-posts-title">突破微信跳转限制－Universal Links那些坑</a>
-        
-          <br>
-          <p class="release">发表于
-          <time datetime="2016-01-10T13:43:29.000Z">
-            2016-01-10
-          </time>
-          </p>
-        
-        
-          <span class="author">| authored by BryanOne</span>
-        
       </div>
     
   </div>
 
 
 
+<nav class="pagination row">
 
-<nav id="pagination">
-
-  <div class="pagination-number">
+    <div class="pagination-indicator col-xs-4">
+        
+    </div>
+  <div class="pagination-number col-xs-4">
       
       <p class="page-number">
-          第1/1页
+          第1/2页
       </p>
       
   </div>
 
- <div class="pagination-indicator">
+ <div class="pagination-indicator col-xs-4">
      
-
+     <a href="/page/2/" class="next-page">下一页 ></a>
      
  </div>
 </nav>
@@ -220,7 +237,7 @@
         </div>
     </div>
 
-    <div id="eleme-bottom-outer">
+    <div class="eleme-footer">
         <div id="bottom-inner">
             <p class="eleme-copyright">&copy; copyright 2016-2017 by Eleme Mobilists</p>
             <p class="eleme-theme-copyright">eleme-mobile hexo theme by eleme ios team</a></p>
@@ -232,6 +249,16 @@
     <script src="/js/eleme-theme.js"></script>
     
     
+    <script src="//cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="//cdn.bootcss.com/highlight.js/9.10.0/highlight.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        $('figure').each(function(i, block) {
+          hljs.highlightBlock(block);
+        });
+      });
+    </script>
 </div>
 
 </body>

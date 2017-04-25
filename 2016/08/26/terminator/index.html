@@ -4,12 +4,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Amigo---Android hotfix terminator">
-  <meta name="keywords" content="Android,Hotfix,">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="Amigo---Android hotfix terminator">
+    <meta name="keywords" content="Android,Hotfix,">
     <link rel="apple-touch-icon" href="/img/default_logo.png">
-  <title>Amigo---Android hotfix terminator - Eleme Mobilists</title>
+    <link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/atom-one-light.min.css" rel="stylesheet">
+    <title>Amigo---Android hotfix terminator - Eleme Mobilists</title>
   
     <!-- stylesheets list from config.yml -->
     
@@ -19,27 +21,40 @@
 </head>
 <body>
 
-<div id="wrapper">
-    <div id="eleme-menu-outer">
-        <div id="eleme-menu-wrapper">
-            <a href="/"><img src="/img/eleme-logo.png"></a>
-                <div id="menu-inner">
+<div class="container-fluid eleme-wrapper">
+    <nav class="navbar navbar-default eleme-navbar">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">
+                    <img alt="eleme" src="/img/eleme-logo.png" style="height: 20px">
+                </a>
+                <button class="navbar-toggle" data-toggle="collapse" href="#eleme-navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse" id="eleme-navbar-collapse">
+            <ul class="nav navbar-nav navbar-right">
                 
-                <a href="/">主页</a>
+                <li><a href="/archives">归档</a></li>
                 
-                <a href="/archives">归档</a>
+                <li><a href="/about">关于</a></li>
                 
-                <a href="/about">关于</a>
+                <li><a href="/friend">友链</a></li>
                 
-                <a href="/atom.xml">订阅</a>
+                <li><a href="/atom.xml">订阅</a></li>
                 
+            </ul>
             </div>
         </div>
-    </div>
 
-    <div id="eleme-content-outer">
+    </nav>
+
+    <div class="eleme-body">
         <div id="content-inner">
-            <article id="post">
+            <article id="post" class="container">
     <h1 class="post-title">Amigo---Android hotfix terminator</h1>
     <p class="post-meta">
         
@@ -120,17 +135,18 @@
 
 
 
-<nav id="pagination">
+<nav class="pagination row">
 
-  <div class="pagination-number">
+    <div class="pagination-indicator col-xs-4">
+        
+        <a href="/2016/09/01/Amigo 源码解读/" class="prev-post">< Amigo 源码解读</a>
+        
+    </div>
+  <div class="pagination-number col-xs-4">
       
   </div>
 
- <div class="pagination-indicator">
-     
-     <a href="/2016/09/01/Amigo 源码解读/" class="prev-post">< Amigo 源码解读</a>
-     
-
+ <div class="pagination-indicator col-xs-4">
      
      <a href="/2016/06/20/浅谈Mantle/" class="next-post">浅谈Mantle ></a>
      
@@ -142,7 +158,7 @@
         </div>
     </div>
 
-    <div id="eleme-bottom-outer">
+    <div class="eleme-footer">
         <div id="bottom-inner">
             <p class="eleme-copyright">&copy; copyright 2016-2017 by Eleme Mobilists</p>
             <p class="eleme-theme-copyright">eleme-mobile hexo theme by eleme ios team</a></p>
@@ -154,6 +170,16 @@
     <script src="/js/eleme-theme.js"></script>
     
     
+    <script src="//cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="//cdn.bootcss.com/highlight.js/9.10.0/highlight.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        $('figure').each(function(i, block) {
+          hljs.highlightBlock(block);
+        });
+      });
+    </script>
 </div>
 
 </body>
