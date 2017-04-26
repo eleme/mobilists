@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "hexo": {
-    "version": "3.3.1"
+    "version": "3.2.2"
   },
   "dependencies": {
     "body-parser": "^1.16.0",
@@ -13,10 +13,9 @@
     "hexo-deployer-git": "~x",
     "hexo-generator-archive": "~x",
     "hexo-generator-category": "~x",
+    "hexo-generator-eleme": "file:generators",
     "hexo-generator-feed": "^1.2.0",
-    "hexo-generator-friendlink": "1.0.0",
     "hexo-generator-index": "~x",
-    "hexo-generator-multiauthor": "1.0.0",
     "hexo-generator-tag": "~x",
     "hexo-renderer-ejs": "~x",
     "hexo-renderer-marked": "~x",

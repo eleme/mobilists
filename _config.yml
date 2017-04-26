@@ -64,8 +64,10 @@ multiauthor:
         displayname: jianan.ye
     - JackCho:
         displayname: amigo
+        hidden: true
     - zhungxd:
         displayname: xiaodong.zhang
+        hidden: true
     - PhilCai:
         displayname: zheren.cai
         avatar: 'https://avatars0.githubusercontent.com/u/6828315?v=3&s=400'
